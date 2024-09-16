@@ -29,6 +29,13 @@ let msgTxt = document.querySelector('main .container > .right .send_message inpu
 if (sessionStorage.getItem('sender') !== null) {
     sender = sessionStorage.getItem('sender');
 }
+else {
+    sessionStorage.setItem('sender', "null");
+}
+if (sessionStorage.getItem('loggedIn') == null) {
+    console.log(sessionStorage.getItem('loggedIn'));
+    sessionStorage.setItem("loggedIn", String(false));
+}
 const module = {}; // Declare module with 
 // send users to database
 module.sendUsers = function sendUsers(userName, password) {
@@ -152,16 +159,15 @@ function handleNewUser() {
 //  check if loggedIn
 function checkIfLogged(check) {
     var _a;
-    String(check);
     let before_login = document.querySelector('.before_login') || document.querySelector('.before_login');
     // if not logged in
-    if (check == "null" || check == "false") {
+    if (String(check) == "null" || String(check) == "false") {
         sessionStorage.setItem("loggedIn", String(false));
         before_login.style.cssText = "display: flex";
         logoutButton.style.display = "none";
         // if logged in
     }
-    else if (check == "true" || check !== "null") {
+    else if (String(check) == "true" || String(check) != "null") {
         sender = sessionStorage.getItem('sender');
         sessionStorage.setItem("loggedIn", String(true));
         before_login.style.cssText = "display: none";
