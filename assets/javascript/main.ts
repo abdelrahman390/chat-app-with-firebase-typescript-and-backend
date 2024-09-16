@@ -39,7 +39,14 @@ let msgTxt = document.querySelector('main .container > .right .send_message inpu
 
 if(sessionStorage.getItem('sender') !== null){
     sender = sessionStorage.getItem('sender');
+} else {
+    sessionStorage.setItem('sender', "null")
+}
+if(sessionStorage.getItem('loggedIn') == null){
+    console.log(sessionStorage.getItem('loggedIn'))
+    sessionStorage.setItem("loggedIn", String(false))
 } 
+
 
     // if(sendButton != null){
     //     sendButton.addEventListener("click", function() {
@@ -191,15 +198,14 @@ async function handleNewUser() {
 /********************* login and register page and logout handle *********************/ 
 //  check if loggedIn
 function checkIfLogged(check: null | string) {
-    String(check)
     let before_login: HTMLElement | null = document.querySelector('.before_login')! || document.querySelector('.before_login');
     // if not logged in
-    if(check == "null" || check == "false"){
+    if(String(check) == "null" || String(check) == "false"){
         sessionStorage.setItem("loggedIn", String(false))
         before_login.style.cssText = "display: flex"
         logoutButton.style.display = "none"
     // if logged in
-    } else if(check == "true" || check !== "null") {
+    } else if(String(check) == "true" || String(check) != "null") {
         sender = sessionStorage.getItem('sender')
         sessionStorage.setItem("loggedIn", String(true))
         before_login.style.cssText = "display: none"
