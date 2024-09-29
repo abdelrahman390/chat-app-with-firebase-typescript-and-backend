@@ -55,7 +55,7 @@ if(sessionStorage.getItem('loggedIn') == null){
     // }
 
 interface Module {
-    sendMsg: (message: string, receiver: string) => void;
+    sendMsg: (chatId: number, message: string, receiver: string) => void;
     sendUsers: (userName: string, password: string | number) => void;
     chatsContainer: (chatId: string | number, message: string, receiver: string) => void;
     // chatId, message, receiver
@@ -76,30 +76,20 @@ module.sendUsers = function sendUsers(userName, password){
 }
 
 // send message to database
-module.sendMsg = function sendMsg(message, receiver){
-    var msg = message;
-    var timestamp = new Date().getTime();
-    set(ref(db,"messages/"+timestamp),{
-        msg : msg,
-        sender : sender,
-        receiver : receiver
-    })
-}
-
-// get chats from database
-module.chatsContainer = function chatsContainer(chatId, message, receiver){
+module.sendMsg = function chatsContainer(chatId, message, receiver){
     var msg = message;
     sender = sessionStorage.getItem('sender');
     var BigDate = new Date()
     var date = BigDate.toLocaleString()
     var timestamp = new Date().getTime();
+    // var timestamp = new Date().getTime();
+    CHeckIfAnyChangesInChatsListener(timestamp)
     set(ref(db,`chats/${+chatId}/` + timestamp),{
         msg : msg,
         sender : sender,
         receiver : receiver,
         date : date
     })
-
 }
 
 // get users
@@ -131,14 +121,15 @@ function getChatsMessages() {
     });
 }
 
-function CHeckIfAnyChangesInChatsListener(){
-    onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-        if (allowed){
-        // const newChat = snapshot.val();
-        // console.log('New user chat:', newChat);
-        getChatsMessages()
-    }
+async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
+    await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
+        if (snapshot.key == messageDate){
+            const newMessage = snapshot.val();
+            console.log('New message:', newMessage.msg);
+            getChatsMessages()
+        }
     });
+    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 }
 CHeckIfAnyChangesInChatsListener()
 
@@ -510,15 +501,14 @@ function sendMessage() {
     });
 
     img.addEventListener("click", function() {
-        CHeckIfAnyChangesInChatsListener()
         allowed = true
         let receiver = sessionStorage.getItem("receiver")
         const openedChat = sessionStorage.getItem("opened_chat");
         const message = input.value;
 
-        if (openedChat && message && receiver && module.chatsContainer) {
+        if (openedChat && message && receiver && module.sendMsg) {
             // Call the function with the correct parameters
-            module.chatsContainer(openedChat, message, receiver);
+            module.sendMsg(Number(openedChat), message, receiver);
             input.value = "";
         } else {
             // Handle cases where one of the values might be null or undefined
@@ -615,3 +605,28 @@ function viewMessages() {
     chatDiv.scrollTop = chatDiv.scrollHeight;
 }
 
+
+// if (!("Notification" in window)) {
+//     console.log("This browser does not support desktop notifications");
+//   }
+
+// Notification.requestPermission().then(permission => {
+//     if (permission === "granted") {
+//     console.log("User granted permission to send notifications");
+//     } else {
+//     console.log("User denied permission to send notifications");
+//     }
+// });
+
+
+// if (Notification.permission === "granted") {
+//     const notification = new Notification("Hello!", {
+//     // body: `new message from ${} : ${}`,
+//     // icon: "https://example.com/icon.png" // Optional, to include an icon
+//     });
+
+//     // Optional: handle click event
+//     notification.onclick = function() {
+//     window.open("https://yourwebsite.com"); // Redirects when the user clicks the notification
+//     };
+// }
