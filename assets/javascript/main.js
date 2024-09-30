@@ -93,13 +93,14 @@ function getChatsMessages() {
 function CHeckIfAnyChangesInChatsListener(messageDate) {
     return __awaiter(this, void 0, void 0, function* () {
         yield onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`), (snapshot) => {
-            if (snapshot.key == messageDate) {
-                const newMessage = snapshot.val();
-                console.log('New message:', newMessage.msg);
-                getChatsMessages();
-            }
+            // if (snapshot.key == messageDate){
+            const newMessage = snapshot.val();
+            console.log('New message:', newMessage.msg);
+            getChatsMessages();
+            // }
         });
         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        console.log("new Edits");
     });
 }
 CHeckIfAnyChangesInChatsListener();
