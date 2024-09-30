@@ -111,7 +111,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key]
             }
         }
-        // console.log("allChats",allChats)
+        console.log("allChats",allChats)
         sessionStorage.setItem("chats", JSON.stringify(allChats))
         if (allowed){
             viewMessages()
@@ -121,13 +121,27 @@ function getChatsMessages() {
     });
 }
 
-async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
-    await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-        const newMessage = snapshot.val();
-        // console.log('New message:', newMessage);
-        getChatsMessages()
+// async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
+//     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
+//         const newMessage = snapshot.val();
+//         // console.log('New message:', newMessage);
+//         getChatsMessages()
+//     });
+// }
+
+// let getChatsMessagesCalled = false;
+async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
+    await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`), (snapshot: any) => {
+        // const newMessage = snapshot.val();
+        
+        // Check if getChatsMessages has been called before
+        // if (!getChatsMessagesCalled) {
+            getChatsMessages();
+            // getChatsMessagesCalled = true;  // Set the flag to true after first call
+        // }
     });
 }
+
 
 
 let newUserAddedTime: number | string; 
@@ -193,6 +207,7 @@ function checkIfLogged(check: null | string) {
         logoutButton.style.display = "none"
     // if logged in
     } else if(String(check) == "true" || String(check) != "null") {
+        // console.log("login")
         sender = sessionStorage.getItem('sender')
         sessionStorage.setItem("loggedIn", String(true))
         before_login.style.cssText = "display: none"
@@ -476,6 +491,7 @@ function handleChat() {
             // Append all sections to the body (or any container)
             chatBox.appendChild(header);
             chatBox.appendChild(sendMessageDiv);
+            allowed = true
             sendMessage()
             viewMessages()
 
@@ -499,7 +515,6 @@ function sendMessage() {
     });
 
     img.addEventListener("click", function() {
-        allowed = true
         let receiver = sessionStorage.getItem("receiver")
         const openedChat = sessionStorage.getItem("opened_chat");
         const message = input.value;

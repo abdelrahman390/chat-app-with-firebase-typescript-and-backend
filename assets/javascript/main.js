@@ -81,7 +81,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key];
             }
         }
-        // console.log("allChats",allChats)
+        console.log("allChats", allChats);
         sessionStorage.setItem("chats", JSON.stringify(allChats));
         if (allowed) {
             viewMessages();
@@ -90,12 +90,23 @@ function getChatsMessages() {
         onlyOnce: true
     });
 }
+// async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
+//     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
+//         const newMessage = snapshot.val();
+//         // console.log('New message:', newMessage);
+//         getChatsMessages()
+//     });
+// }
+// let getChatsMessagesCalled = false;
 function CHeckIfAnyChangesInChatsListener(messageDate) {
     return __awaiter(this, void 0, void 0, function* () {
         yield onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`), (snapshot) => {
-            const newMessage = snapshot.val();
-            // console.log('New message:', newMessage);
+            // const newMessage = snapshot.val();
+            // Check if getChatsMessages has been called before
+            // if (!getChatsMessagesCalled) {
             getChatsMessages();
+            // getChatsMessagesCalled = true;  // Set the flag to true after first call
+            // }
         });
     });
 }
@@ -159,6 +170,7 @@ function checkIfLogged(check) {
         // if logged in
     }
     else if (String(check) == "true" || String(check) != "null") {
+        // console.log("login")
         sender = sessionStorage.getItem('sender');
         sessionStorage.setItem("loggedIn", String(true));
         before_login.style.cssText = "display: none";
@@ -396,6 +408,7 @@ function handleChat() {
             // Append all sections to the body (or any container)
             chatBox.appendChild(header);
             chatBox.appendChild(sendMessageDiv);
+            allowed = true;
             sendMessage();
             viewMessages();
             // handle close chat
@@ -416,7 +429,6 @@ function sendMessage() {
         event.preventDefault(); // Prevents the form from submitting
     });
     img.addEventListener("click", function () {
-        allowed = true;
         let receiver = sessionStorage.getItem("receiver");
         const openedChat = sessionStorage.getItem("opened_chat");
         const message = input.value;
