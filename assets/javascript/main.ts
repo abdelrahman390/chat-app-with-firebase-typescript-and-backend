@@ -123,11 +123,11 @@ function getChatsMessages() {
 
 async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-        if (snapshot.key == messageDate){
+        // if (snapshot.key == messageDate){
             const newMessage = snapshot.val();
             console.log('New message:', newMessage.msg);
             getChatsMessages()
-        }
+        // }
     });
     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 }
