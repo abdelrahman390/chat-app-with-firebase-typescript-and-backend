@@ -83,7 +83,6 @@ module.sendMsg = function chatsContainer(chatId, message, receiver){
     var date = BigDate.toLocaleString()
     var timestamp = new Date().getTime();
     // var timestamp = new Date().getTime();
-    CHeckIfAnyChangesInChatsListener(timestamp)
     set(ref(db,`chats/${+chatId}/` + timestamp),{
         msg : msg,
         sender : sender,
@@ -112,6 +111,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key]
             }
         }
+        // console.log("allChats",allChats)
         sessionStorage.setItem("chats", JSON.stringify(allChats))
         if (allowed){
             viewMessages()
@@ -123,16 +123,12 @@ function getChatsMessages() {
 
 async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-        // if (snapshot.key == messageDate){
-            const newMessage = snapshot.val();
-            console.log('New message:', newMessage.msg);
-            getChatsMessages()
-        // }
+        const newMessage = snapshot.val();
+        // console.log('New message:', newMessage);
+        getChatsMessages()
     });
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    console.log("new")
 }
-CHeckIfAnyChangesInChatsListener()
+
 
 let newUserAddedTime: number | string; 
 function CHeckIfAnyUserRegistered(){
@@ -204,6 +200,7 @@ function checkIfLogged(check: null | string) {
         handleFriendsList(JSON.parse(sessionStorage.getItem("all_users")  ?? "[]"))
         handleChat()
         getChatsMessages() 
+        CHeckIfAnyChangesInChatsListener()
     }
 }
 checkIfLogged(sender)
