@@ -130,6 +130,7 @@ async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
         // }
     });
     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    console.log("new Edits")
 }
 CHeckIfAnyChangesInChatsListener()
 
