@@ -571,6 +571,7 @@ main > .container .logout {
   main > .container > .right {
     display: none;
     width: 100%;
+    height: calc(100vh - 115px);
   }
   main > .container > .right header .left img {
     height: 35px;

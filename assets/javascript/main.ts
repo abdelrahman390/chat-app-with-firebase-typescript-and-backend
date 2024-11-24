@@ -91,14 +91,16 @@ module.sendMsg = function chatsContainer(chatId, message, receiver){
 }
 
 // get users
-onValue(ref(db, 'users'), (snapshot: any) => {
-    // console.log(snapshot.val())
-    localStorage.setItem("all_users", JSON.stringify(snapshot.val()))
-    loginAndRegister() 
-}, {
-    onlyOnce: true
-});
-
+async function getUsers() {
+    await onValue(ref(db, 'users'), (snapshot: any) => {
+        // console.log(snapshot.val())
+        localStorage.setItem("all_users", JSON.stringify(snapshot.val()))
+        loginAndRegister() 
+    }, {
+        onlyOnce: true
+    });
+}
+getUsers()
 
 // get every chat messages
 function getChatsMessages() {
@@ -121,7 +123,6 @@ function getChatsMessages() {
     });
 }
 
-
 async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
     let openedChat = localStorage.getItem("opened_chat")
     await onChildAdded(ref(db, `chats/${openedChat}`), (snapshot: any) => {
@@ -132,8 +133,7 @@ async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
         getChatsMessages();
     });
 }
-
-
+CHeckIfAnyChangesInChatsListener()
 
 let newUserAddedTime: number | string; 
 function CHeckIfAnyUserRegistered(){
@@ -203,9 +203,10 @@ function checkIfLogged(check: null | string) {
         localStorage.setItem("loggedIn", String(true))
         before_login.style.cssText = "display: none"
         logoutButton.style.display = "unset"
+        console.log(JSON.parse(localStorage.getItem("all_users") ?? "[]"))
         handleFriendsList(JSON.parse(localStorage.getItem("all_users")  ?? "[]"))
         handleChat()
-        getChatsMessages() 
+        getChatsMessages()
         CHeckIfAnyChangesInChatsListener()
     }
 }
@@ -357,7 +358,8 @@ interface User {
     date?: string;
 }
 function handleFriendsList(users: { [key: string]: User }) {
-
+    
+    // console.log(users)
     let addedFriends: string[] = [];
     let friendsList: HTMLElement = document.querySelector("main .container > .left .friends")!;
     sender = localStorage.getItem("sender")

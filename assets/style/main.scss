@@ -424,6 +424,7 @@ main{
             & > .right{
                 display: none;
                 width: 100%;
+                height: calc(100vh - 115px);
                 & header {
                     & .left {
                         & img {

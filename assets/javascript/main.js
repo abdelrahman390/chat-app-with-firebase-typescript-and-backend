@@ -63,13 +63,18 @@ module.sendMsg = function chatsContainer(chatId, message, receiver) {
     });
 };
 // get users
-onValue(ref(db, 'users'), (snapshot) => {
-    // console.log(snapshot.val())
-    localStorage.setItem("all_users", JSON.stringify(snapshot.val()));
-    loginAndRegister();
-}, {
-    onlyOnce: true
-});
+function getUsers() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield onValue(ref(db, 'users'), (snapshot) => {
+            // console.log(snapshot.val())
+            localStorage.setItem("all_users", JSON.stringify(snapshot.val()));
+            loginAndRegister();
+        }, {
+            onlyOnce: true
+        });
+    });
+}
+getUsers();
 // get every chat messages
 function getChatsMessages() {
     onValue(ref(db, 'chats'), (snapshot) => {
@@ -102,6 +107,7 @@ function CHeckIfAnyChangesInChatsListener(messageDate) {
         });
     });
 }
+CHeckIfAnyChangesInChatsListener();
 let newUserAddedTime;
 function CHeckIfAnyUserRegistered() {
     onChildAdded(ref(db, 'users/'), (snapshot) => {
@@ -152,7 +158,7 @@ function handleNewUser() {
 /********************* login and register page and logout handle *********************/
 //  check if loggedIn
 function checkIfLogged(check) {
-    var _a;
+    var _a, _b;
     let before_login = document.querySelector('.before_login') || document.querySelector('.before_login');
     // if not logged in
     if (String(check) == "null" || String(check) == "false") {
@@ -167,7 +173,8 @@ function checkIfLogged(check) {
         localStorage.setItem("loggedIn", String(true));
         before_login.style.cssText = "display: none";
         logoutButton.style.display = "unset";
-        handleFriendsList(JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]"));
+        console.log(JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]"));
+        handleFriendsList(JSON.parse((_b = localStorage.getItem("all_users")) !== null && _b !== void 0 ? _b : "[]"));
         handleChat();
         getChatsMessages();
         CHeckIfAnyChangesInChatsListener();
@@ -308,6 +315,7 @@ logoutButton.addEventListener("click", function () {
     checkIfLogged('false');
 });
 function handleFriendsList(users) {
+    // console.log(users)
     let addedFriends = [];
     let friendsList = document.querySelector("main .container > .left .friends");
     sender = localStorage.getItem("sender");
