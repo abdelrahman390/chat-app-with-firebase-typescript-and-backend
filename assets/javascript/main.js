@@ -95,9 +95,11 @@ function getChatsMessages() {
         onlyOnce: true
     });
 }
+// getChatsMessages()
 function CHeckIfAnyChangesInChatsListener(messageDate) {
     return __awaiter(this, void 0, void 0, function* () {
         let openedChat = localStorage.getItem("opened_chat");
+        console.log("openedChat", openedChat);
         yield onChildAdded(ref(db, `chats/${openedChat}`), (snapshot) => {
             const newMessage = snapshot.val();
             console.log('New message:', newMessage);
@@ -110,11 +112,13 @@ function CHeckIfAnyChangesInChatsListener(messageDate) {
 CHeckIfAnyChangesInChatsListener();
 let newUserAddedTime;
 function CHeckIfAnyUserRegistered() {
-    onChildAdded(ref(db, 'users/'), (snapshot) => {
-        // const newUser = snapshot.val();
-        if (newUserAddedTime <= snapshot.key) {
-            localStorage.setItem("sender_id", snapshot.key);
-        }
+    return __awaiter(this, void 0, void 0, function* () {
+        yield onChildAdded(ref(db, 'users/'), (snapshot) => {
+            // const newUser = snapshot.val();
+            if (newUserAddedTime <= snapshot.key) {
+                localStorage.setItem("sender_id", snapshot.key);
+            }
+        });
     });
 }
 /************** GET NEW USERS WHEN SIGH UP *************/
@@ -312,6 +316,7 @@ logoutButton.addEventListener("click", function () {
     localStorage.setItem("sender", 'null');
     localStorage.setItem("sender_id", 'null');
     localStorage.setItem("receiver", 'null');
+    localStorage.setItem("opened_chat", 'null');
     checkIfLogged('false');
 });
 function handleFriendsList(users) {
@@ -353,6 +358,7 @@ function handleChat() {
     let friendsList = document.querySelectorAll("main .container > .left .friends .friend");
     chatBox.innerHTML = "";
     friendsList.forEach(element => {
+        // console.log(element)
         element.addEventListener("click", function () {
             if (windowWidth < 600) {
                 chatBox.style.cssText = "display: flex;";
@@ -429,6 +435,7 @@ function handleChat() {
                     element.parentElement.parentElement.style.cssText = "display: flex;";
                 });
             }
+            CHeckIfAnyChangesInChatsListener();
         });
     });
 }

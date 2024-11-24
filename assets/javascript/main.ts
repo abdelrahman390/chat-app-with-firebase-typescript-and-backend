@@ -122,9 +122,11 @@ function getChatsMessages() {
         onlyOnce: true
     });
 }
+// getChatsMessages()
 
 async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
     let openedChat = localStorage.getItem("opened_chat")
+    console.log("openedChat" , openedChat)
     await onChildAdded(ref(db, `chats/${openedChat}`), (snapshot: any) => {
         const newMessage = snapshot.val();
         console.log('New message:', newMessage);
@@ -136,8 +138,8 @@ async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
 CHeckIfAnyChangesInChatsListener()
 
 let newUserAddedTime: number | string; 
-function CHeckIfAnyUserRegistered(){
-    onChildAdded(ref(db, 'users/'), (snapshot: any) => {
+async function CHeckIfAnyUserRegistered(){
+    await onChildAdded(ref(db, 'users/'), (snapshot: any) => {
         // const newUser = snapshot.val();
         if (newUserAddedTime <= snapshot.key) {
             localStorage.setItem("sender_id", snapshot.key);
@@ -346,6 +348,7 @@ logoutButton.addEventListener("click", function() {
     localStorage.setItem("sender", 'null')
     localStorage.setItem("sender_id", 'null')
     localStorage.setItem("receiver", 'null')
+    localStorage.setItem("opened_chat", 'null')
     checkIfLogged('false')
 })
 /********************* login and register page handle *********************/ 
@@ -400,7 +403,6 @@ function handleFriendsList(users: { [key: string]: User }) {
 }
 /********************* handle friends list *********************/ 
 
-
 /********************* handle chat *********************/ 
 // handle open chat
 function handleChat() {
@@ -409,8 +411,8 @@ function handleChat() {
     chatBox.innerHTML = ""
 
     friendsList.forEach(element => {
+        // console.log(element)
         element.addEventListener("click", function() {
-
             if (windowWidth < 600) {
                 chatBox.style.cssText = "display: flex;"
                 element.parentElement!.parentElement!.style.cssText = "display: none;"
@@ -507,8 +509,10 @@ function handleChat() {
                 });
             }
 
+            CHeckIfAnyChangesInChatsListener()
         })
     });
+
 }
 
 // handle send message
