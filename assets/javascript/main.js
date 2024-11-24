@@ -25,15 +25,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 // variables
-let msgTxt = document.querySelector('main .container > .right .send_message input'), sendButton = document.querySelector('main .container > .right .send_message img'), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") || document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = sessionStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") || document.querySelector("main .container .logout"), windowWidth = window.innerWidth;
-if (sessionStorage.getItem('sender') !== null) {
-    sender = sessionStorage.getItem('sender');
+let msgTxt = document.querySelector('main .container > .right .send_message input'), sendButton = document.querySelector('main .container > .right .send_message img'), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") || document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") || document.querySelector("main .container .logout"), windowWidth = window.innerWidth;
+if (localStorage.getItem('sender') !== null) {
+    sender = localStorage.getItem('sender');
 }
 else {
-    sessionStorage.setItem('sender', "null");
+    localStorage.setItem('sender', "null");
 }
-if (sessionStorage.getItem('loggedIn') == null) {
-    sessionStorage.setItem("loggedIn", String(false));
+if (localStorage.getItem('loggedIn') == null) {
+    localStorage.setItem("loggedIn", String(false));
 }
 const module = {}; // Declare module with 
 // send users to database
@@ -51,7 +51,7 @@ module.sendUsers = function sendUsers(userName, password) {
 // send message to database
 module.sendMsg = function chatsContainer(chatId, message, receiver) {
     var msg = message;
-    sender = sessionStorage.getItem('sender');
+    sender = localStorage.getItem('sender');
     var BigDate = new Date();
     var date = BigDate.toLocaleString();
     var timestamp = new Date().getTime();
@@ -65,7 +65,7 @@ module.sendMsg = function chatsContainer(chatId, message, receiver) {
 // get users
 onValue(ref(db, 'users'), (snapshot) => {
     // console.log(snapshot.val())
-    sessionStorage.setItem("all_users", JSON.stringify(snapshot.val()));
+    localStorage.setItem("all_users", JSON.stringify(snapshot.val()));
     loginAndRegister();
 }, {
     onlyOnce: true
@@ -73,7 +73,7 @@ onValue(ref(db, 'users'), (snapshot) => {
 // get every chat messages
 function getChatsMessages() {
     onValue(ref(db, 'chats'), (snapshot) => {
-        let sender = sessionStorage.getItem('sender');
+        let sender = localStorage.getItem('sender');
         let allChats = {};
         for (const key in snapshot.val()) {
             let messageData = Object.values(snapshot.val()[key])[0];
@@ -82,7 +82,7 @@ function getChatsMessages() {
             }
         }
         console.log("allChats", allChats);
-        sessionStorage.setItem("chats", JSON.stringify(allChats));
+        localStorage.setItem("chats", JSON.stringify(allChats));
         if (allowed) {
             viewMessages();
         }
@@ -92,7 +92,7 @@ function getChatsMessages() {
 }
 function CHeckIfAnyChangesInChatsListener(messageDate) {
     return __awaiter(this, void 0, void 0, function* () {
-        let openedChat = sessionStorage.getItem("opened_chat");
+        let openedChat = localStorage.getItem("opened_chat");
         yield onChildAdded(ref(db, `chats/${openedChat}`), (snapshot) => {
             const newMessage = snapshot.val();
             console.log('New message:', newMessage);
@@ -107,7 +107,7 @@ function CHeckIfAnyUserRegistered() {
     onChildAdded(ref(db, 'users/'), (snapshot) => {
         // const newUser = snapshot.val();
         if (newUserAddedTime <= snapshot.key) {
-            sessionStorage.setItem("sender_id", snapshot.key);
+            localStorage.setItem("sender_id", snapshot.key);
         }
     });
 }
@@ -136,11 +136,11 @@ function handleNewUser() {
             let newUserKey = newUser.key;
             let newUserData = newUser.data;
             let newUserUserName = newUser.data.user_name;
-            let ullUsersAfterUpdate = JSON.parse((_a = sessionStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]");
+            let ullUsersAfterUpdate = JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]");
             ullUsersAfterUpdate[newUserKey] = newUserData;
-            sessionStorage.setItem("sender_id", String(newUserKey));
-            sessionStorage.setItem("sender", newUserUserName);
-            sessionStorage.setItem("all_users", JSON.stringify(ullUsersAfterUpdate));
+            localStorage.setItem("sender_id", String(newUserKey));
+            localStorage.setItem("sender", newUserUserName);
+            localStorage.setItem("all_users", JSON.stringify(ullUsersAfterUpdate));
             handleFriendsList(ullUsersAfterUpdate);
         }
         catch (error) {
@@ -156,18 +156,18 @@ function checkIfLogged(check) {
     let before_login = document.querySelector('.before_login') || document.querySelector('.before_login');
     // if not logged in
     if (String(check) == "null" || String(check) == "false") {
-        sessionStorage.setItem("loggedIn", String(false));
+        localStorage.setItem("loggedIn", String(false));
         before_login.style.cssText = "display: flex";
         logoutButton.style.display = "none";
         // if logged in
     }
     else if (String(check) == "true" || String(check) != "null") {
         // console.log("login")
-        sender = sessionStorage.getItem('sender');
-        sessionStorage.setItem("loggedIn", String(true));
+        sender = localStorage.getItem('sender');
+        localStorage.setItem("loggedIn", String(true));
         before_login.style.cssText = "display: none";
         logoutButton.style.display = "unset";
-        handleFriendsList(JSON.parse((_a = sessionStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]"));
+        handleFriendsList(JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]"));
         handleChat();
         getChatsMessages();
         CHeckIfAnyChangesInChatsListener();
@@ -177,7 +177,7 @@ checkIfLogged(sender);
 // login and register handle
 function loginAndRegister() {
     var _a;
-    let all_users = JSON.parse((_a = sessionStorage.getItem('all_users')) !== null && _a !== void 0 ? _a : "[]");
+    let all_users = JSON.parse((_a = localStorage.getItem('all_users')) !== null && _a !== void 0 ? _a : "[]");
     // console.log(all_users)
     // handle hide and show password
     let hidePassword = document.querySelectorAll("main > .container .before_login > .container .box form .cont .container img");
@@ -245,8 +245,8 @@ function loginAndRegister() {
                     module.sendUsers(userName.value, password.value);
                 }
                 handleNewUser();
-                sessionStorage.setItem("loggedIn", "true");
-                sessionStorage.setItem("sender", userName.value);
+                localStorage.setItem("loggedIn", "true");
+                localStorage.setItem("sender", userName.value);
                 CHeckIfAnyUserRegistered();
                 checkIfLogged('true');
                 userName.value = "";
@@ -267,9 +267,9 @@ function loginAndRegister() {
             for (const key in all_users) {
                 if (userNameInput.value == all_users[key].user_name && passwordInput.value == all_users[key].password) {
                     loginAlarm.classList.remove("open");
-                    sessionStorage.setItem("loggedIn", 'true');
-                    sessionStorage.setItem("sender", userNameInput.value);
-                    sessionStorage.setItem("sender_id", key);
+                    localStorage.setItem("loggedIn", 'true');
+                    localStorage.setItem("sender", userNameInput.value);
+                    localStorage.setItem("sender_id", key);
                     checkIfLogged('true');
                     userNameInput.value = "";
                     passwordInput.value = "";
@@ -301,20 +301,20 @@ ChangeLoginPageButton.addEventListener("click", function () {
 });
 // logout button handle
 logoutButton.addEventListener("click", function () {
-    sessionStorage.setItem("loggedIn", "false");
-    sessionStorage.setItem("sender", 'null');
-    sessionStorage.setItem("sender_id", 'null');
-    sessionStorage.setItem("receiver", 'null');
+    localStorage.setItem("loggedIn", "false");
+    localStorage.setItem("sender", 'null');
+    localStorage.setItem("sender_id", 'null');
+    localStorage.setItem("receiver", 'null');
     checkIfLogged('false');
 });
 function handleFriendsList(users) {
     let addedFriends = [];
     let friendsList = document.querySelector("main .container > .left .friends");
-    sender = sessionStorage.getItem("sender");
+    sender = localStorage.getItem("sender");
     // console.log(sender)
     friendsList.innerHTML = "";
     for (const key in users) {
-        if (users[key].user_name != sessionStorage.getItem("sender") && sessionStorage.getItem("sender") !== (null || "null")) {
+        if (users[key].user_name != localStorage.getItem("sender") && localStorage.getItem("sender") !== (null || "null")) {
             addedFriends.push(users[key].user_name);
             let friend = document.createElement("div");
             friend.className = "friend";
@@ -335,7 +335,7 @@ function handleFriendsList(users) {
             friendsList.appendChild(friend);
         }
     }
-    sessionStorage.setItem("addedFriends", JSON.stringify(addedFriends));
+    localStorage.setItem("addedFriends", JSON.stringify(addedFriends));
 }
 /********************* handle friends list *********************/
 /********************* handle chat *********************/
@@ -352,13 +352,13 @@ function handleChat() {
             }
             let receiverName = element.querySelector(".name");
             const receiverId = element.getAttribute("id");
-            const senderId = sessionStorage.getItem("sender_id");
-            sessionStorage.setItem("receiver", receiverName.innerHTML);
+            const senderId = localStorage.getItem("sender_id");
+            localStorage.setItem("receiver", receiverName.innerHTML);
             if (receiverId && senderId) {
                 const receiverLastFourNums = receiverId.slice(-2);
                 const senderLastFourNums = senderId.slice(-2);
                 const chatId = +receiverLastFourNums + +senderLastFourNums;
-                sessionStorage.setItem("opened_chat", chatId.toString());
+                localStorage.setItem("opened_chat", chatId.toString());
             }
             chatBox.innerHTML = "";
             // Creating the header
@@ -433,8 +433,8 @@ function sendMessage() {
         event.preventDefault(); // Prevents the form from submitting
     });
     img.addEventListener("click", function () {
-        let receiver = sessionStorage.getItem("receiver");
-        const openedChat = sessionStorage.getItem("opened_chat");
+        let receiver = localStorage.getItem("receiver");
+        const openedChat = localStorage.getItem("opened_chat");
         const message = input.value;
         if (openedChat && message && receiver && module.sendMsg) {
             // Call the function with the correct parameters
@@ -450,8 +450,8 @@ function sendMessage() {
 // handle view messages
 function viewMessages() {
     var _a, _b;
-    let sender = sessionStorage.getItem("sender");
-    let receiver = sessionStorage.getItem("receiver");
+    let sender = localStorage.getItem("sender");
+    let receiver = localStorage.getItem("receiver");
     let rightDiv = document.querySelector("main .container > .right");
     let existChatDiv = document.querySelector("main .container > .right .chat");
     if (existChatDiv !== null) {
@@ -460,8 +460,8 @@ function viewMessages() {
     // Create the chat section
     const chatDiv = document.createElement('div');
     chatDiv.className = 'chat';
-    let chatId = JSON.parse((_a = sessionStorage.getItem("opened_chat")) !== null && _a !== void 0 ? _a : "[]");
-    let allChats = JSON.parse((_b = sessionStorage.getItem("chats")) !== null && _b !== void 0 ? _b : "[]");
+    let chatId = JSON.parse((_a = localStorage.getItem("opened_chat")) !== null && _a !== void 0 ? _a : "[]");
+    let allChats = JSON.parse((_b = localStorage.getItem("chats")) !== null && _b !== void 0 ? _b : "[]");
     if (allChats[chatId] !== undefined) {
         for (const key in allChats[chatId]) {
             // console.log(allChats[chatId])
