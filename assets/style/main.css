@@ -520,7 +520,7 @@ main > .container .logout {
     padding: 5px;
   }
   main {
-    height: calc(100vh - 60px);
+    height: 100vh;
   }
   main > .container {
     height: calc(100% - 50px);

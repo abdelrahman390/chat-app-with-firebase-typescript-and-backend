@@ -451,10 +451,13 @@ function handleChat() {
       // Right part of the header
       var rightDiv = document.createElement('div');
       rightDiv.className = 'right';
-      var searchImg = document.createElement('img');
-      searchImg.src = 'assets/imgs/cross.png';
-      searchImg.alt = 'exit-chat';
-      rightDiv.appendChild(searchImg);
+      var width = screen.width;
+      if (width <= 600) {
+        var searchImg = document.createElement('img');
+        searchImg.src = 'assets/imgs/cross.png';
+        searchImg.alt = 'exit-chat';
+        rightDiv.appendChild(searchImg);
+      }
 
       // Append left and right parts to the header
       header.appendChild(leftDiv);
@@ -487,13 +490,14 @@ function handleChat() {
       allowed = true;
       sendMessage();
       viewMessages();
-
-      // handle close chat
-      var exitButton = document.querySelector("main > .container > .right header .right img");
-      exitButton.addEventListener("click", function () {
-        chatBox.style.cssText = "display: none;";
-        element.parentElement.parentElement.style.cssText = "display: flex;";
-      });
+      if (width <= 600) {
+        // handle close chat
+        var exitButton = document.querySelector("main > .container > .right header .right img");
+        exitButton.addEventListener("click", function () {
+          chatBox.style.cssText = "display: none;";
+          element.parentElement.parentElement.style.cssText = "display: flex;";
+        });
+      }
     });
   });
 }

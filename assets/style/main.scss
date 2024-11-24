@@ -387,7 +387,7 @@ main{
         padding: 5px;
     }
     main{
-        height: calc(100vh - 60px);
+        height: calc(100vh);
         & > .container {
             height: calc(100% - 50px);
             & .before_login {

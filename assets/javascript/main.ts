@@ -455,11 +455,14 @@ function handleChat() {
             const rightDiv = document.createElement('div');
             rightDiv.className = 'right';
             
-            const searchImg = document.createElement('img');
-            searchImg.src = 'assets/imgs/cross.png';
-            searchImg.alt = 'exit-chat';          
-            rightDiv.appendChild(searchImg);
-            
+            let width = screen.width
+            if (width <= 600) {
+                const searchImg = document.createElement('img');
+                searchImg.src = 'assets/imgs/cross.png';
+                searchImg.alt = 'exit-chat';
+                rightDiv.appendChild(searchImg);
+            }
+
             // Append left and right parts to the header
             header.appendChild(leftDiv);
             header.appendChild(rightDiv);
@@ -493,12 +496,15 @@ function handleChat() {
             sendMessage()
             viewMessages()
 
-            // handle close chat
-            let exitButton: HTMLElement = document.querySelector("main > .container > .right header .right img")!
-            exitButton.addEventListener("click", function() {
-                chatBox.style.cssText = "display: none;"
-                element.parentElement!.parentElement!.style.cssText = "display: flex;"
-            });
+            if (width <= 600) {
+                // handle close chat
+                let exitButton: HTMLElement = document.querySelector("main > .container > .right header .right img")!
+                exitButton.addEventListener("click", function() {
+                    chatBox.style.cssText = "display: none;"
+                    element.parentElement!.parentElement!.style.cssText = "display: flex;"
+                });
+            }
+            
         })
     });
 }
