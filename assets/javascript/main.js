@@ -65,6 +65,7 @@ module.sendMsg = function chatsContainer(chatId, message, receiver) {
 };
 // get users
 onValue(ref(db, 'users'), (snapshot) => {
+    // console.log(snapshot.val())
     sessionStorage.setItem("all_users", JSON.stringify(snapshot.val()));
     loginAndRegister();
 }, {
@@ -90,23 +91,15 @@ function getChatsMessages() {
         onlyOnce: true
     });
 }
-// async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
-//     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-//         const newMessage = snapshot.val();
-//         // console.log('New message:', newMessage);
-//         getChatsMessages()
-//     });
-// }
-// let getChatsMessagesCalled = false;
 function CHeckIfAnyChangesInChatsListener(messageDate) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`), (snapshot) => {
-            // const newMessage = snapshot.val();
-            // Check if getChatsMessages has been called before
-            // if (!getChatsMessagesCalled) {
+        let openedChat = sessionStorage.getItem("opened_chat");
+        yield onChildAdded(ref(db, `chats/${openedChat}`), (snapshot) => {
+            const newMessage = snapshot.val();
+            // console.log('New message:', newMessage);
+            console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
+            // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
             getChatsMessages();
-            // getChatsMessagesCalled = true;  // Set the flag to true after first call
-            // }
         });
     });
 }
@@ -186,6 +179,7 @@ checkIfLogged(sender);
 function loginAndRegister() {
     var _a;
     let all_users = JSON.parse((_a = sessionStorage.getItem('all_users')) !== null && _a !== void 0 ? _a : "[]");
+    // console.log(all_users)
     // handle hide and show password
     let hidePassword = document.querySelectorAll("main > .container .before_login > .container .box form .cont .container img");
     hidePassword.forEach(element => {
@@ -205,85 +199,91 @@ function loginAndRegister() {
             }
         });
     });
-    /************** register **************/
-    let registerCard = document.querySelector("main .container .before_login .container .register");
-    let registerForm = document.querySelector(".register form");
-    let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
-    let password = registerCard.querySelector(".container .before_login .container .box .cont  .password");
-    let registerButton = document.querySelector("main .container .before_login .container .box  .register_button");
-    let confirmPassword = document.querySelector(".container .before_login .container .box .cont  .confirm_password");
-    let registrationPasswordAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.password");
-    let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName");
-    let passwordCheck = false;
-    // check password
-    confirmPassword.addEventListener("input", function () {
-        if (password.value.length <= confirmPassword.value.length && confirmPassword.value !== password.value) {
-            registrationPasswordAlarm.style.cssText = 'display: block; background: #f29999;';
-            confirmPassword.style.cssText = "background-color: #f29999;";
-            passwordCheck = false;
-        }
-        else if (confirmPassword.value == password.value) {
-            registrationPasswordAlarm.style.display = 'none';
-            confirmPassword.style.cssText = "background-color: #1296d1;";
-            passwordCheck = true;
-        }
-    });
-    // send new user
-    registerButton.addEventListener("click", function () {
-        let allCheck = userName.value.length > 2 && passwordCheck && registerForm.checkValidity(); // return boolean 
-        let userExists = false;
-        let key;
-        for (const key in all_users) {
-            // Check if the username matches
-            if (userName.value === all_users[key].user_name) {
-                userExists = true; // Set flag if the user exists
-                registrationUserNameAlarm.classList.add("open");
-                break; // Stop the loop if a match is found
+    function register() {
+        /************** register **************/
+        let registerCard = document.querySelector("main .container .before_login .container .register");
+        let registerForm = document.querySelector(".register form");
+        let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
+        let password = registerCard.querySelector(".container .before_login .container .box .cont  .password");
+        let registerButton = document.querySelector("main .container .before_login .container .box  .register_button");
+        let confirmPassword = document.querySelector(".container .before_login .container .box .cont  .confirm_password");
+        let registrationPasswordAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.password");
+        let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName");
+        let passwordCheck = false;
+        // check password
+        confirmPassword.addEventListener("input", function () {
+            if (password.value.length <= confirmPassword.value.length && confirmPassword.value !== password.value) {
+                registrationPasswordAlarm.style.cssText = 'display: block; background: #f29999;';
+                confirmPassword.style.cssText = "background-color: #f29999;";
+                passwordCheck = false;
             }
-            else {
-                registrationUserNameAlarm.classList.remove("open");
+            else if (confirmPassword.value == password.value) {
+                registrationPasswordAlarm.style.display = 'none';
+                confirmPassword.style.cssText = "background-color: #1296d1;";
+                passwordCheck = true;
             }
-        }
-        if (!userExists && allCheck) {
-            if (module.sendUsers) {
-                let date = new Date().getTime();
-                newUserAddedTime = date;
-                module.sendUsers(userName.value, password.value);
+        });
+        // send new user
+        registerButton.addEventListener("click", function () {
+            let allCheck = userName.value.length > 2 && passwordCheck && registerForm.checkValidity(); // return boolean 
+            let userExists = false;
+            let key;
+            for (const key in all_users) {
+                // Check if the username matches
+                if (userName.value === all_users[key].user_name) {
+                    userExists = true; // Set flag if the user exists
+                    registrationUserNameAlarm.classList.add("open");
+                    break; // Stop the loop if a match is found
+                }
+                else {
+                    registrationUserNameAlarm.classList.remove("open");
+                }
             }
-            handleNewUser();
-            sessionStorage.setItem("loggedIn", "true");
-            sessionStorage.setItem("sender", userName.value);
-            CHeckIfAnyUserRegistered();
-            checkIfLogged('true');
-            userName.value = "";
-            password.value = "";
-            confirmPassword.value = "";
-            ChangeLoginPageButton.click();
-        }
-    });
-    /************** login **************/
-    let userNameInput = document.querySelector(".before_login .container .box form .cont .name");
-    let passwordInput = document.querySelector(".before_login .container .box form .cont .password");
-    let loginAlarm = document.querySelector(".container .before_login .container .box.logIn .cont .alarm");
-    let loginButton = document.querySelector("main .container .before_login .container .box  .login_button");
-    loginButton.addEventListener("click", function () {
-        for (const key in all_users) {
-            if (userNameInput.value == all_users[key].user_name && passwordInput.value == all_users[key].password) {
-                loginAlarm.classList.remove("open");
-                sessionStorage.setItem("loggedIn", 'true');
-                sessionStorage.setItem("sender", userNameInput.value);
-                sessionStorage.setItem("sender_id", key);
+            if (!userExists && allCheck) {
+                if (module.sendUsers) {
+                    let date = new Date().getTime();
+                    newUserAddedTime = date;
+                    module.sendUsers(userName.value, password.value);
+                }
+                handleNewUser();
+                sessionStorage.setItem("loggedIn", "true");
+                sessionStorage.setItem("sender", userName.value);
+                CHeckIfAnyUserRegistered();
                 checkIfLogged('true');
-                userNameInput.value = "";
-                passwordInput.value = "";
-                return;
+                userName.value = "";
+                password.value = "";
+                confirmPassword.value = "";
+                ChangeLoginPageButton.click();
             }
-            else if (userNameInput.value.length > 0 && passwordInput.value.length > 0) {
-                // error
-                loginAlarm.classList.add("open");
+        });
+    }
+    register();
+    function login() {
+        /************** login **************/
+        let userNameInput = document.querySelector(".before_login .container .box form .cont .name");
+        let passwordInput = document.querySelector(".before_login .container .box form .cont .password");
+        let loginAlarm = document.querySelector(".container .before_login .container .box.logIn .cont .alarm");
+        let loginButton = document.querySelector("main .container .before_login .container .box  .login_button");
+        loginButton.addEventListener("click", function () {
+            for (const key in all_users) {
+                if (userNameInput.value == all_users[key].user_name && passwordInput.value == all_users[key].password) {
+                    loginAlarm.classList.remove("open");
+                    sessionStorage.setItem("loggedIn", 'true');
+                    sessionStorage.setItem("sender", userNameInput.value);
+                    sessionStorage.setItem("sender_id", key);
+                    checkIfLogged('true');
+                    userNameInput.value = "";
+                    passwordInput.value = "";
+                    return;
+                }
+                else if (userNameInput.value.length > 0 && passwordInput.value.length > 0) {
+                    // error
+                    loginAlarm.classList.add("open");
+                }
             }
-        }
-    });
+        });
+    }
+    login();
 }
 // register button handle
 ChangeLoginPageButton.addEventListener("click", function () {
@@ -464,8 +464,15 @@ function viewMessages() {
         for (const key in allChats[chatId]) {
             // console.log(allChats[chatId])
             if (allChats[chatId][key].receiver == sender) {
-                let dateObj = new Date(allChats[chatId][key].date);
-                let options = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+                let dateObj = new Date(1732455330805);
+                // Format the date to remove the seconds
+                let options = {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                };
                 let formattedDate = dateObj.toLocaleString('en-US', options);
                 // Friend's message
                 const friendMessageDiv = document.createElement('div');
@@ -477,16 +484,22 @@ function viewMessages() {
                 friendContent.textContent = allChats[chatId][key].msg;
                 const friendDate = document.createElement('h4');
                 friendDate.className = 'date';
-                friendDate.textContent = formattedDate;
+                friendDate.innerText = formattedDate;
                 friendCont.appendChild(friendContent);
                 friendCont.appendChild(friendDate);
                 friendMessageDiv.appendChild(friendCont);
                 chatDiv.appendChild(friendMessageDiv);
             }
             if (sender == allChats[chatId][key].sender) {
-                let dateObj = new Date(allChats[chatId][key].date);
+                let dateObj = new Date(1732455330805);
                 // Format the date to remove the seconds
-                let options = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+                let options = {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                };
                 let formattedDate = dateObj.toLocaleString('en-US', options);
                 // My message
                 const myMessageDiv = document.createElement('div');

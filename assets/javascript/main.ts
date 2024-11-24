@@ -93,6 +93,7 @@ module.sendMsg = function chatsContainer(chatId, message, receiver){
 
 // get users
 onValue(ref(db, 'users'), (snapshot: any) => {
+    // console.log(snapshot.val())
     sessionStorage.setItem("all_users", JSON.stringify(snapshot.val()))
     loginAndRegister() 
 }, {
@@ -111,7 +112,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key]
             }
         }
-        console.log("allChats",allChats)
+        console.log("allChats", allChats)
         sessionStorage.setItem("chats", JSON.stringify(allChats))
         if (allowed){
             viewMessages()
@@ -121,24 +122,15 @@ function getChatsMessages() {
     });
 }
 
-// async function CHeckIfAnyChangesInChatsListener(messageDate?: number){
-//     await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`) , (snapshot: any) => {
-//         const newMessage = snapshot.val();
-//         // console.log('New message:', newMessage);
-//         getChatsMessages()
-//     });
-// }
 
-// let getChatsMessagesCalled = false;
 async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
-    await onChildAdded(ref(db, `chats/${sessionStorage.getItem("opened_chat")}`), (snapshot: any) => {
-        // const newMessage = snapshot.val();
-        
-        // Check if getChatsMessages has been called before
-        // if (!getChatsMessagesCalled) {
-            getChatsMessages();
-            // getChatsMessagesCalled = true;  // Set the flag to true after first call
-        // }
+    let openedChat = sessionStorage.getItem("opened_chat")
+    await onChildAdded(ref(db, `chats/${openedChat}`), (snapshot: any) => {
+        const newMessage = snapshot.val();
+        // console.log('New message:', newMessage);
+        console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
+        // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
+        getChatsMessages();
     });
 }
 
@@ -223,6 +215,7 @@ checkIfLogged(sender)
 // login and register handle
 function loginAndRegister() {
     let all_users = JSON.parse(sessionStorage.getItem('all_users') ?? "[]")
+    // console.log(all_users)
 
     // handle hide and show password
     let hidePassword = document.querySelectorAll("main > .container .before_login > .container .box form .cont .container img")
@@ -244,7 +237,8 @@ function loginAndRegister() {
             })
     });
 
-    /************** register **************/ 
+    function register() {
+            /************** register **************/ 
     let registerCard: HTMLElement = document.querySelector("main .container .before_login .container .register")!;
     let registerForm: HTMLFormElement = document.querySelector(".register form")!;
     let userName:  HTMLInputElement | null  = registerCard.querySelector(".container .before_login .container .box .cont  .name")!
@@ -299,14 +293,17 @@ function loginAndRegister() {
             ChangeLoginPageButton.click();
         } 
     })
+    }
+    register()
 
-    /************** login **************/ 
+    function login() {
+            /************** login **************/ 
     let userNameInput: HTMLInputElement = document.querySelector(".before_login .container .box form .cont .name")!
     let passwordInput: HTMLInputElement = document.querySelector(".before_login .container .box form .cont .password")!
     let loginAlarm = document.querySelector(".container .before_login .container .box.logIn .cont .alarm")!
     let loginButton = document.querySelector("main .container .before_login .container .box  .login_button")!
 
-    loginButton.addEventListener("click", function() {
+    loginButton.addEventListener("click", function() {                                                                                                                                                                                                                                                                                                                                                                                                                                    
         for (const key in all_users) {
             if(userNameInput.value == all_users[key].user_name && passwordInput.value == all_users[key].password){
                 loginAlarm.classList.remove("open")
@@ -323,6 +320,9 @@ function loginAndRegister() {
             }
         }
     })
+    }
+    login() 
+
 }
 
 // register button handle
@@ -555,61 +555,76 @@ function viewMessages() {
         for (const key in allChats[chatId]) {
             // console.log(allChats[chatId])
     
-                if (allChats[chatId][key].receiver == sender){
-                    let dateObj = new Date(allChats[chatId][key].date);
-                    let options: {} = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
-                    let formattedDate = dateObj.toLocaleString('en-US', options);
+            if (allChats[chatId][key].receiver == sender){
+                let dateObj = new Date(1732455330805);
 
-                    // Friend's message
-                    const friendMessageDiv = document.createElement('div');
-                    friendMessageDiv.className = 'friend_message';
-                
-                    var friendCont = document.createElement('div');
-                    friendCont.className = 'cont';
-                
-                    var friendContent = document.createElement('h3');
-                    friendContent.className = 'content';
-                    friendContent.textContent = allChats[chatId][key].msg;
-    
-                    const friendDate = document.createElement('h4');
-                    friendDate.className = 'date';
-                    friendDate.textContent = formattedDate;
-    
-                    friendCont.appendChild(friendContent);
-                    friendCont.appendChild(friendDate);
-                    friendMessageDiv.appendChild(friendCont);
-                    chatDiv.appendChild(friendMessageDiv);
-                }
-    
-                if (sender == allChats[chatId][key].sender){
-                    let dateObj = new Date(allChats[chatId][key].date);
-                    // Format the date to remove the seconds
-                    let options: {} = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
-                    let formattedDate = dateObj.toLocaleString('en-US', options);
+                // Format the date to remove the seconds
+                let options: Intl.DateTimeFormatOptions = { 
+                    month: 'numeric', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: 'numeric', 
+                    hour12: true 
+                };
+                let formattedDate = dateObj.toLocaleString('en-US', options);
 
-                    // My message
-                    const myMessageDiv = document.createElement('div');
-                    myMessageDiv.className = 'my_message';
-                    
-                    const myCont = document.createElement('div');
-                    myCont.className = 'cont';
-                    
-                    const myContent = document.createElement('h3');
-                    myContent.className = 'content';
-                    myContent.textContent = allChats[chatId][key].msg;
-                    
-                    const myDate = document.createElement('h4');
-                    myDate.className = 'date';
-                    myDate.textContent = formattedDate;
-                    
-                    myCont.appendChild(myContent);
-                    myCont.appendChild(myDate);
-                    myMessageDiv.appendChild(myCont);
-                    
-                    // Append messages to chat
-                    chatDiv.appendChild(myMessageDiv);
+                // Friend's message
+                const friendMessageDiv = document.createElement('div');
+                friendMessageDiv.className = 'friend_message';
+            
+                var friendCont = document.createElement('div');
+                friendCont.className = 'cont';
+            
+                var friendContent = document.createElement('h3');
+                friendContent.className = 'content';
+                friendContent.textContent = allChats[chatId][key].msg;
+
+                const friendDate = document.createElement('h4');
+                friendDate.className = 'date';
+                friendDate.innerText = formattedDate;
+
+                friendCont.appendChild(friendContent);
+                friendCont.appendChild(friendDate);
+                friendMessageDiv.appendChild(friendCont);
+                chatDiv.appendChild(friendMessageDiv);
+            }
     
-                }
+            if (sender == allChats[chatId][key].sender) {
+                let dateObj = new Date(1732455330805);
+
+                // Format the date to remove the seconds
+                let options: Intl.DateTimeFormatOptions = { 
+                    month: 'numeric', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: 'numeric', 
+                    hour12: true 
+                };
+                let formattedDate = dateObj.toLocaleString('en-US', options);
+
+                // My message
+                const myMessageDiv = document.createElement('div');
+                myMessageDiv.className = 'my_message';
+                
+                const myCont = document.createElement('div');
+                myCont.className = 'cont';
+                
+                const myContent = document.createElement('h3');
+                myContent.className = 'content';
+                myContent.textContent = allChats[chatId][key].msg;
+                
+                const myDate = document.createElement('h4');
+                myDate.className = 'date';
+                myDate.textContent = formattedDate;
+                
+                myCont.appendChild(myContent);
+                myCont.appendChild(myDate);
+                myMessageDiv.appendChild(myCont);
+                
+                // Append messages to chat
+                chatDiv.appendChild(myMessageDiv);
+
+            }
     
                 rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
     
