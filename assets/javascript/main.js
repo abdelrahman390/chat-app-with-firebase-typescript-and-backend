@@ -81,7 +81,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key];
             }
         }
-        // console.log("allChats", allChats)
+        console.log("allChats", allChats);
         sessionStorage.setItem("chats", JSON.stringify(allChats));
         if (allowed) {
             viewMessages();
@@ -95,7 +95,7 @@ function CHeckIfAnyChangesInChatsListener(messageDate) {
         let openedChat = sessionStorage.getItem("opened_chat");
         yield onChildAdded(ref(db, `chats/${openedChat}`), (snapshot) => {
             const newMessage = snapshot.val();
-            // console.log('New message:', newMessage);
+            console.log('New message:', newMessage);
             // console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
             // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
             getChatsMessages();
@@ -198,8 +198,8 @@ function loginAndRegister() {
             }
         });
     });
+    /************** register **************/
     function register() {
-        /************** register **************/
         let registerCard = document.querySelector("main .container .before_login .container .register");
         let registerForm = document.querySelector(".register form");
         let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
@@ -380,10 +380,10 @@ function handleChat() {
             // Right part of the header
             const rightDiv = document.createElement('div');
             rightDiv.className = 'right';
-            // const searchImg = document.createElement('img');
-            // searchImg.src = 'assets/imgs/cross.png';
-            // searchImg.alt = 'exit-chat';          
-            // rightDiv.appendChild(searchImg);
+            const searchImg = document.createElement('img');
+            searchImg.src = 'assets/imgs/cross.png';
+            searchImg.alt = 'exit-chat';
+            rightDiv.appendChild(searchImg);
             // Append left and right parts to the header
             header.appendChild(leftDiv);
             header.appendChild(rightDiv);

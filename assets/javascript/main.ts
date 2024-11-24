@@ -111,7 +111,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key]
             }
         }
-        // console.log("allChats", allChats)
+        console.log("allChats", allChats)
         sessionStorage.setItem("chats", JSON.stringify(allChats))
         if (allowed){
             viewMessages()
@@ -126,7 +126,7 @@ async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
     let openedChat = sessionStorage.getItem("opened_chat")
     await onChildAdded(ref(db, `chats/${openedChat}`), (snapshot: any) => {
         const newMessage = snapshot.val();
-        // console.log('New message:', newMessage);
+        console.log('New message:', newMessage);
         // console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
         // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
         getChatsMessages();
@@ -236,62 +236,62 @@ function loginAndRegister() {
             })
     });
 
+    /************** register **************/ 
     function register() {
-            /************** register **************/ 
-    let registerCard: HTMLElement = document.querySelector("main .container .before_login .container .register")!;
-    let registerForm: HTMLFormElement = document.querySelector(".register form")!;
-    let userName:  HTMLInputElement | null  = registerCard.querySelector(".container .before_login .container .box .cont  .name")!
-    let password: HTMLInputElement | null = registerCard.querySelector(".container .before_login .container .box .cont  .password")!
-    let registerButton = document.querySelector("main .container .before_login .container .box  .register_button")!;
-    let confirmPassword: HTMLInputElement | null  = document.querySelector(".container .before_login .container .box .cont  .confirm_password")!
-    let registrationPasswordAlarm: HTMLElement = document.querySelector(".container .before_login .container .box.register .cont .alarm.password")!
-    let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName")!
-    let passwordCheck = false;
+        let registerCard: HTMLElement = document.querySelector("main .container .before_login .container .register")!;
+        let registerForm: HTMLFormElement = document.querySelector(".register form")!;
+        let userName:  HTMLInputElement = registerCard.querySelector(".container .before_login .container .box .cont  .name")!
+        let password: HTMLInputElement = registerCard.querySelector(".container .before_login .container .box .cont  .password")!
+        let registerButton = document.querySelector("main .container .before_login .container .box  .register_button")!;
+        let confirmPassword: HTMLInputElement = document.querySelector(".container .before_login .container .box .cont  .confirm_password")!
+        let registrationPasswordAlarm: HTMLElement = document.querySelector(".container .before_login .container .box.register .cont .alarm.password")!
+        let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName")!
+        let passwordCheck = false;
 
-    // check password
-    confirmPassword.addEventListener("input", function() {
-        if(password.value.length <= confirmPassword.value.length && confirmPassword.value !== password.value){
-            registrationPasswordAlarm.style.cssText = 'display: block; background: #f29999;'
-            confirmPassword.style.cssText = "background-color: #f29999;"
-            passwordCheck = false
-        } else if(confirmPassword.value == password.value){
-            registrationPasswordAlarm.style.display = 'none'
-            confirmPassword.style.cssText = "background-color: #1296d1;"
-            passwordCheck = true
-        }
-    })
-    // send new user
-    registerButton.addEventListener("click", function() {
-        let allCheck = userName.value.length > 2 && passwordCheck && registerForm.checkValidity(); // return boolean 
-        let userExists = false;
-        let key: number | string;
-        for (const key in all_users) {
-            // Check if the username matches
-            if (userName.value === all_users[key].user_name) {
-                userExists = true;  // Set flag if the user exists
-                registrationUserNameAlarm.classList.add("open")
-                break;  // Stop the loop if a match is found
-            } else {
-                registrationUserNameAlarm.classList.remove("open")
+        // check password
+        confirmPassword.addEventListener("input", function() {
+            if(password.value.length <= confirmPassword.value.length && confirmPassword.value !== password.value){
+                registrationPasswordAlarm.style.cssText = 'display: block; background: #f29999;'
+                confirmPassword.style.cssText = "background-color: #f29999;"
+                passwordCheck = false
+            } else if(confirmPassword.value == password.value){
+                registrationPasswordAlarm.style.display = 'none'
+                confirmPassword.style.cssText = "background-color: #1296d1;"
+                passwordCheck = true
             }
-        }
-        if (!userExists && allCheck) {
-            if (module.sendUsers){
-                let date = new Date().getTime()
-                newUserAddedTime = date
-                module.sendUsers(userName.value, password.value);
+        })
+        // send new user
+        registerButton.addEventListener("click", function() {
+            let allCheck = userName.value.length > 2 && passwordCheck && registerForm.checkValidity(); // return boolean 
+            let userExists = false;
+            let key: number | string;
+            for (const key in all_users) {
+                // Check if the username matches
+                if (userName.value === all_users[key].user_name) {
+                    userExists = true;  // Set flag if the user exists
+                    registrationUserNameAlarm.classList.add("open")
+                    break;  // Stop the loop if a match is found
+                } else {
+                    registrationUserNameAlarm.classList.remove("open")
+                }
             }
-            handleNewUser();
-            sessionStorage.setItem("loggedIn", "true");
-            sessionStorage.setItem("sender", userName.value);
-            CHeckIfAnyUserRegistered()
-            checkIfLogged('true');
-            userName.value = "";
-            password.value = "";
-            confirmPassword.value = "";
-            ChangeLoginPageButton.click();
-        } 
-    })
+            if (!userExists && allCheck) {
+                if (module.sendUsers){
+                    let date = new Date().getTime()
+                    newUserAddedTime = date
+                    module.sendUsers(userName.value, password.value);
+                }
+                handleNewUser();
+                sessionStorage.setItem("loggedIn", "true");
+                sessionStorage.setItem("sender", userName.value);
+                CHeckIfAnyUserRegistered()
+                checkIfLogged('true');
+                userName.value = "";
+                password.value = "";
+                confirmPassword.value = "";
+                ChangeLoginPageButton.click();
+            } 
+        })
     }
     register()
 
@@ -455,10 +455,10 @@ function handleChat() {
             const rightDiv = document.createElement('div');
             rightDiv.className = 'right';
             
-            // const searchImg = document.createElement('img');
-            // searchImg.src = 'assets/imgs/cross.png';
-            // searchImg.alt = 'exit-chat';          
-            // rightDiv.appendChild(searchImg);
+            const searchImg = document.createElement('img');
+            searchImg.src = 'assets/imgs/cross.png';
+            searchImg.alt = 'exit-chat';          
+            rightDiv.appendChild(searchImg);
             
             // Append left and right parts to the header
             header.appendChild(leftDiv);

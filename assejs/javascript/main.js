@@ -104,7 +104,7 @@ function getChatsMessages() {
         allChats[key] = snapshot.val()[key];
       }
     }
-    // console.log("allChats", allChats)
+    console.log("allChats", allChats);
     sessionStorage.setItem("chats", JSON.stringify(allChats));
     if (allowed) {
       viewMessages();
@@ -126,7 +126,7 @@ function _CHeckIfAnyChangesInChatsListener() {
           _context.next = 3;
           return (0, _firebaseDatabase.onChildAdded)((0, _firebaseDatabase.ref)(db, "chats/".concat(openedChat)), function (snapshot) {
             var newMessage = snapshot.val();
-            // console.log('New message:', newMessage);
+            console.log('New message:', newMessage);
             // console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
             // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
             getChatsMessages();
@@ -259,8 +259,9 @@ function loginAndRegister() {
       }
     });
   });
+
+  /************** register **************/
   function register() {
-    /************** register **************/
     var registerCard = document.querySelector("main .container .before_login .container .register");
     var registerForm = document.querySelector(".register form");
     var userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
@@ -450,11 +451,10 @@ function handleChat() {
       // Right part of the header
       var rightDiv = document.createElement('div');
       rightDiv.className = 'right';
-
-      // const searchImg = document.createElement('img');
-      // searchImg.src = 'assets/imgs/cross.png';
-      // searchImg.alt = 'exit-chat';          
-      // rightDiv.appendChild(searchImg);
+      var searchImg = document.createElement('img');
+      searchImg.src = 'assets/imgs/cross.png';
+      searchImg.alt = 'exit-chat';
+      rightDiv.appendChild(searchImg);
 
       // Append left and right parts to the header
       header.appendChild(leftDiv);
