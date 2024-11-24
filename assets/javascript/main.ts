@@ -442,7 +442,7 @@ function handleChat() {
             const userCont = document.createElement('div');
             userCont.className = 'cont';
 
-            const userName = document.createElement('h1');
+            const userName = document.createElement('h2');
             userName.className = 'name';
             userName.innerHTML = element.querySelector(".name")!.innerHTML;
             
@@ -455,11 +455,10 @@ function handleChat() {
             const rightDiv = document.createElement('div');
             rightDiv.className = 'right';
             
-            const searchImg = document.createElement('img');
-            searchImg.src = 'assets/imgs/cross.png';
-            searchImg.alt = 'exit-chat';
-            
-            rightDiv.appendChild(searchImg);
+            // const searchImg = document.createElement('img');
+            // searchImg.src = 'assets/imgs/cross.png';
+            // searchImg.alt = 'exit-chat';          
+            // rightDiv.appendChild(searchImg);
             
             // Append left and right parts to the header
             header.appendChild(leftDiv);
@@ -547,26 +546,21 @@ function viewMessages() {
     let chatId = JSON.parse(sessionStorage.getItem("opened_chat")  ?? "[]")
 
     let allChats = JSON.parse(sessionStorage.getItem("chats")  ?? "[]")
-    // console.log(chatId)
-    // console.log(allChats)
 
     if(allChats[chatId] !== undefined){
         for (const key in allChats[chatId]) {
             // console.log(allChats[chatId])
     
-            if (allChats[chatId][key].receiver == sender){
                 let dateObj = new Date(+key);
-                // Format the date to remove the seconds
                 let options: Intl.DateTimeFormatOptions = { 
-                    month: 'numeric', 
-                    day: 'numeric', 
                     hour: 'numeric', 
                     minute: 'numeric', 
                     hour12: true 
                 };
-                let formattedDate = dateObj.toLocaleString('en-US', options);
-
-                // Friend's message
+            let formattedDate = dateObj.toLocaleString('en-US', options);
+            
+            // Friend's message
+            if (allChats[chatId][key].receiver == sender){
                 const friendMessageDiv = document.createElement('div');
                 friendMessageDiv.className = 'friend_message';
             
@@ -587,19 +581,8 @@ function viewMessages() {
                 chatDiv.appendChild(friendMessageDiv);
             }
     
+            // My message
             if (sender == allChats[chatId][key].sender) {
-                let dateObj = new Date(+key);
-                // Format the date to remove the seconds
-                let options: Intl.DateTimeFormatOptions = { 
-                    month: 'numeric', 
-                    day: 'numeric', 
-                    hour: 'numeric', 
-                    minute: 'numeric', 
-                    hour12: true 
-                };
-                let formattedDate = dateObj.toLocaleString('en-US', options);
-
-                // My message
                 const myMessageDiv = document.createElement('div');
                 myMessageDiv.className = 'my_message';
                 
@@ -622,9 +605,8 @@ function viewMessages() {
                 chatDiv.appendChild(myMessageDiv);
 
             }
-    
+
                 rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
-    
         }
     }
     chatDiv.scrollTop = chatDiv.scrollHeight;
