@@ -82,7 +82,6 @@ module.sendMsg = function chatsContainer(chatId, message, receiver){
     var BigDate = new Date()
     var date = BigDate.toLocaleString()
     var timestamp = new Date().getTime();
-    // var timestamp = new Date().getTime();
     set(ref(db,`chats/${+chatId}/` + timestamp),{
         msg : msg,
         sender : sender,
@@ -112,7 +111,7 @@ function getChatsMessages() {
                 allChats[key] = snapshot.val()[key]
             }
         }
-        console.log("allChats", allChats)
+        // console.log("allChats", allChats)
         sessionStorage.setItem("chats", JSON.stringify(allChats))
         if (allowed){
             viewMessages()
@@ -128,7 +127,7 @@ async function CHeckIfAnyChangesInChatsListener(messageDate?: number) {
     await onChildAdded(ref(db, `chats/${openedChat}`), (snapshot: any) => {
         const newMessage = snapshot.val();
         // console.log('New message:', newMessage);
-        console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
+        // console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
         // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
         getChatsMessages();
     });
@@ -556,8 +555,7 @@ function viewMessages() {
             // console.log(allChats[chatId])
     
             if (allChats[chatId][key].receiver == sender){
-                let dateObj = new Date(1732455330805);
-
+                let dateObj = new Date(+key);
                 // Format the date to remove the seconds
                 let options: Intl.DateTimeFormatOptions = { 
                     month: 'numeric', 
@@ -590,8 +588,7 @@ function viewMessages() {
             }
     
             if (sender == allChats[chatId][key].sender) {
-                let dateObj = new Date(1732455330805);
-
+                let dateObj = new Date(+key);
                 // Format the date to remove the seconds
                 let options: Intl.DateTimeFormatOptions = { 
                     month: 'numeric', 
