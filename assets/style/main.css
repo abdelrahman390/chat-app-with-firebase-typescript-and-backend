@@ -155,6 +155,11 @@ main > .container > .left .friends .friend .last-message {
   font-family: system-ui;
   font-size: 13px;
 }
+main > .container > .left .friends .friends_list_error {
+  color: #f24d4d;
+  text-align: center;
+  margin-top: 50px;
+}
 main > .container > .right {
   display: -webkit-box;
   display: -ms-flexbox;

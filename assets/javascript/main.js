@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -7,197 +8,234 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getDatabase, ref, set, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
-// import { initializeApp } from "firebase/app";
-// import { query, equalTo, get, child , getDatabase, ref, set, remove, onChildAdded, onChildRemoved , onChildChanged, onValue } from "firebase/database";
-// // Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCZTDHJyKOpPtc6QV4mISVS8JDzYg7W5nA",
-    authDomain: "chat-app-7742a.firebaseapp.com",
-    projectId: "chat-app-7742a",
-    storageBucket: "chat-app-7742a.appspot.com",
-    messagingSenderId: "812879044915",
-    appId: "1:812879044915:web:e61340195cb8523ec65e46"
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 // variables
-let msgTxt = document.querySelector('main .container > .right .send_message input'), sendButton = document.querySelector('main .container > .right .send_message img'), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") || document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") || document.querySelector("main .container .logout"), windowWidth = window.innerWidth;
-if (localStorage.getItem('sender') !== null) {
-    sender = localStorage.getItem('sender');
+let msgTxt = document.querySelector("main .container > .right .send_message input"), sendButton = document.querySelector("main .container > .right .send_message img"), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") ||
+    document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") ||
+    document.querySelector("main .container .logout"), windowWidth = window.innerWidth;
+if (localStorage.getItem("sender") !== null) {
+    sender = localStorage.getItem("sender");
 }
 else {
-    localStorage.setItem('sender', "null");
+    localStorage.setItem("sender", "null");
 }
-if (localStorage.getItem('loggedIn') == null) {
+if (localStorage.getItem("loggedIn") == null) {
     localStorage.setItem("loggedIn", String(false));
 }
-const module = {}; // Declare module with 
-// send users to database
-module.sendUsers = function sendUsers(userName, password) {
-    // console.log(password)
-    var timestamp = new Date().getTime();
-    var BigDate = new Date();
-    var date = BigDate.toLocaleString();
-    set(ref(db, "users/" + timestamp), {
-        user_name: userName,
-        password: password,
-        date: date
-    });
-};
-// send message to database
-module.sendMsg = function chatsContainer(chatId, message, receiver) {
-    var msg = message;
-    sender = localStorage.getItem('sender');
-    var BigDate = new Date();
-    var date = BigDate.toLocaleString();
-    var timestamp = new Date().getTime();
-    set(ref(db, `chats/${+chatId}/` + timestamp), {
-        msg: msg,
-        sender: sender,
-        receiver: receiver,
-        date: date
-    });
-};
-// get users
-function getUsers() {
+const module = {}; // Declare module with
+// Send message Django api
+function sendMsg(chatId, message, receiver) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield onValue(ref(db, 'users'), (snapshot) => {
-            // console.log(snapshot.val())
-            localStorage.setItem("all_users", JSON.stringify(snapshot.val()));
-            loginAndRegister();
-        }, {
-            onlyOnce: true
-        });
-    });
-}
-getUsers();
-// get every chat messages
-function getChatsMessages() {
-    onValue(ref(db, 'chats'), (snapshot) => {
-        let sender = localStorage.getItem('sender');
-        let allChats = {};
-        for (const key in snapshot.val()) {
-            let messageData = Object.values(snapshot.val()[key])[0];
-            if (sender === String(messageData.sender) || sender === String(messageData.receiver)) {
-                allChats[key] = snapshot.val()[key];
-            }
-        }
-        console.log("allChats", allChats);
-        localStorage.setItem("chats", JSON.stringify(allChats));
-        if (allowed) {
-            viewMessages();
-        }
-    }, {
-        onlyOnce: true
-    });
-}
-// getChatsMessages()
-function CHeckIfAnyChangesInChatsListener(messageDate) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let openedChat = localStorage.getItem("opened_chat");
-        console.log("openedChat", openedChat);
-        yield onChildAdded(ref(db, `chats/${openedChat}`), (snapshot) => {
-            const newMessage = snapshot.val();
-            console.log('New message:', newMessage);
-            // console.log(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
-            // alert(`${newMessage.sender} >>>>>> ${newMessage.msg}`);
-            getChatsMessages();
-        });
-    });
-}
-CHeckIfAnyChangesInChatsListener();
-let newUserAddedTime;
-function CHeckIfAnyUserRegistered() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield onChildAdded(ref(db, 'users/'), (snapshot) => {
-            // const newUser = snapshot.val();
-            if (newUserAddedTime <= snapshot.key) {
-                localStorage.setItem("sender_id", snapshot.key);
-            }
-        });
-    });
-}
-/************** GET NEW USERS WHEN SIGH UP *************/
-function waitForNewUser() {
-    return new Promise((resolve, reject) => {
-        onChildAdded(ref(db, `users`), (snapshot) => {
-            const newUserKey = snapshot.key; // Get the key of the new user
-            const newUserData = snapshot.val(); // Get the data of the new user
-            // console.log(newUserKey)
-            // console.log(newUserData)
-            // Resolve the Promise with an object containing both the key and the data
-            resolve({ key: newUserKey, data: newUserData });
-        }, (error) => {
-            reject(error); // Handle any errors that occur
-        });
-    });
-}
-function handleNewUser() {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a;
+        // API URL
+        const apiUrl = "http://127.0.0.1:8000/api/chat/save-message/";
+        let sender = localStorage.getItem("sender");
+        var BigDate = new Date();
+        var date = BigDate.toLocaleString();
+        var timestamp = new Date().getTime();
+        // console.log(chatId, message, receiver)
         try {
-            const newUser = yield waitForNewUser(); // Wait for the Promise to resolve
-            // console.log('New user key:', newUser.key); // 1725300481565
-            // console.log('New user data:', newUser.data); //{"date": "9/2/2024, 9:08:01 PM","password": "","user_name": "ttrttevfggf" }
-            let newUserKey = newUser.key;
-            let newUserData = newUser.data;
-            let newUserUserName = newUser.data.user_name;
-            let ullUsersAfterUpdate = JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]");
-            ullUsersAfterUpdate[newUserKey] = newUserData;
-            localStorage.setItem("sender_id", String(newUserKey));
-            localStorage.setItem("sender", newUserUserName);
-            localStorage.setItem("all_users", JSON.stringify(ullUsersAfterUpdate));
-            handleFriendsList(ullUsersAfterUpdate);
+            const response = yield fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sender: sender,
+                    msg: message,
+                    receiver: receiver,
+                    date: date,
+                    messageTime: timestamp,
+                    chatId: chatId,
+                }),
+            });
+            // Handle response
+            const responseData = yield response.json();
+            if (response.ok) {
+                // console.log(`Success: ${responseData.message}`);
+            }
+            else {
+                // console.log(`Error: ${responseData.error || "An error occurred"}`);
+            }
         }
         catch (error) {
-            console.error('Error waiting for new user:', error);
+            console.log(`Network Error: ${error.message}`);
         }
     });
 }
-/************** GET NEW USERS WHEN SIGH UP *************/
+// Send message Django api
+// async function getOpenChatMessageApi(chatId: any): Promise<Record<string, any> | null> {
+function getOpenChatMessageApi(chatId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // API URL
+        const apiUrl = "http://127.0.0.1:8000/api/chat/OpenedChatMessages/";
+        try {
+            const response = yield fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    chat_id: chatId
+                }),
+            });
+            // Handle response
+            const responseData = yield response.json();
+            if (response.ok) {
+                // console.log("Success", responseData.chat);
+                return responseData.chat;
+            }
+            else {
+                console.log(`Error: ${responseData.error || "An error occurred"}`);
+            }
+        }
+        catch (error) {
+            console.log(`Network Error: ${error.message}`);
+        }
+    });
+}
+const socket = io("http://localhost:3002");
+function getNewOpenChatMessages(chatId) {
+    console.log("Attempting to listen for messages on chat:", chatId);
+    // Ensure the socket is connected before subscribing
+    if (socket.connected) {
+        setupListeners(chatId);
+    }
+    else {
+        socket.once("connect", () => {
+            console.log("Connected to server with ID:", socket.id);
+            setupListeners(chatId);
+        });
+    }
+    // Handle disconnection
+    socket.once("disconnect", () => {
+        console.log("Disconnected from server");
+    });
+}
+function setupListeners(chatId) {
+    // Unsubscribe from previous chat to avoid duplication
+    socket.emit("unsubscribeFromChat", chatId.toString());
+    console.log(`Subscribed to chat: ${chatId}`);
+    // Subscribe to the new chat
+    socket.emit("subscribeToChat", chatId.toString());
+    // Remove previous listeners to avoid duplication
+    socket.off("newMessage");
+    socket.on("newMessage", (data) => {
+        console.log("New message received:", data);
+        viewMessages(data.id, data.Data); // Call your message handling function
+    });
+}
+function stopListeningToChat(chatId) {
+    console.log(`Unsubscribing from chat: ${chatId}`);
+    socket.emit("unsubscribeFromChat", chatId.toString());
+}
+// Example usage: stop listening to chat "98" after 10 seconds
+// setTimeout(() => {
+//     stopListeningToChat(119);
+// }, 10000);
+// Login handle 
+function loginHandle(user_name, password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // API URL
+        const apiUrl = "http://127.0.0.1:8000/api/chat/login/";
+        try {
+            const response = yield fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_name: user_name,
+                    password: password,
+                }),
+            });
+            // Handle response
+            const responseData = yield response.json();
+            // console.log(responseData);
+            if (response.ok) {
+                console.log(`Success: ${JSON.stringify(responseData)}`);
+                return responseData;
+            }
+            else {
+                console.log(`Error: ${responseData.error || "An error occurred"}`);
+            }
+        }
+        catch (error) {
+            console.log(`Network Error: ${error.message}`);
+        }
+    });
+}
+// Login handle 
+function registerHandle(user_name, password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // API URL
+        const apiUrl = "http://127.0.0.1:8000/api/chat/Signup/";
+        try {
+            const response = yield fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    user_name: user_name,
+                    password: password,
+                }),
+            });
+            // Handle response
+            const responseData = yield response.json();
+            // console.log(responseData);
+            if (response.ok) {
+                console.log(`Success: ${JSON.stringify(responseData)}`);
+                return responseData;
+            }
+            else {
+                console.log(`Error: ${responseData.error || "An error occurred"}`);
+            }
+        }
+        catch (error) {
+            console.log(`Network Error: ${error.message}`);
+        }
+    });
+}
 /********************* login and register page and logout handle *********************/
 //  check if loggedIn
 function checkIfLogged(check) {
-    var _a, _b;
-    let before_login = document.querySelector('.before_login') || document.querySelector('.before_login');
-    // if not logged in
-    if (String(check) == "null" || String(check) == "false") {
-        localStorage.setItem("loggedIn", String(false));
-        before_login.style.cssText = "display: flex";
-        logoutButton.style.display = "none";
-        // if logged in
-    }
-    else if (String(check) == "true" || String(check) != "null") {
-        // console.log("login")
-        sender = localStorage.getItem('sender');
-        localStorage.setItem("loggedIn", String(true));
-        before_login.style.cssText = "display: none";
-        logoutButton.style.display = "unset";
-        console.log(JSON.parse((_a = localStorage.getItem("all_users")) !== null && _a !== void 0 ? _a : "[]"));
-        handleFriendsList(JSON.parse((_b = localStorage.getItem("all_users")) !== null && _b !== void 0 ? _b : "[]"));
-        handleChat();
-        getChatsMessages();
-        CHeckIfAnyChangesInChatsListener();
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        let before_login = document.querySelector(".before_login");
+        // if not logged in
+        if (String(check) == "null" || String(check) == "false") {
+            console.log("not login");
+            localStorage.setItem("loggedIn", String(false));
+            before_login.style.cssText = "display: flex";
+            logoutButton.style.display = "none";
+            loginAndRegister();
+            // if logged in
+        }
+        else if (String(check) == "true" || String(check) != "null") {
+            console.log("login");
+            localStorage.setItem("loggedIn", String(true));
+            sender = localStorage.getItem("sender");
+            before_login.style.cssText = "display: none";
+            logoutButton.style.display = "unset";
+            yield handleFriendsList();
+            // handleChat();
+            // getChatsMessages();
+            // CHeckIfAnyChangesInChatsListener();
+        }
+    });
 }
 checkIfLogged(sender);
 // login and register handle
+// Define types for the input elements and other elements you are interacting with
 function loginAndRegister() {
-    var _a;
-    let all_users = JSON.parse((_a = localStorage.getItem('all_users')) !== null && _a !== void 0 ? _a : "[]");
-    // console.log(all_users)
-    // handle hide and show password
-    let hidePassword = document.querySelectorAll("main > .container .before_login > .container .box form .cont .container img");
-    hidePassword.forEach(element => {
+    // Handle hide and show password
+    const hidePassword = document.querySelectorAll("main > .container .before_login > .container .box form .cont .container img");
+    hidePassword.forEach((element) => {
         element.addEventListener("click", function () {
             const parent = element.parentElement;
-            if (parent) { // Check if parentElement is not null
-                let input = parent.querySelector("input");
-                if (input && input.type === "text") { // Check if input is not null
+            if (parent) {
+                // Check if parentElement is not null
+                const input = parent.querySelector("input");
+                if (input && input.type === "text") {
+                    // Check if input is not null
                     input.type = "password";
                 }
                 else if (input) {
@@ -211,144 +249,204 @@ function loginAndRegister() {
     });
     /************** register **************/
     function register() {
-        let registerCard = document.querySelector("main .container .before_login .container .register");
-        let registerForm = document.querySelector(".register form");
-        let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
-        let password = registerCard.querySelector(".container .before_login .container .box .cont  .password");
-        let registerButton = document.querySelector("main .container .before_login .container .box  .register_button");
-        let confirmPassword = document.querySelector(".container .before_login .container .box .cont  .confirm_password");
-        let registrationPasswordAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.password");
-        let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName");
-        let passwordCheck = false;
-        // check password
-        confirmPassword.addEventListener("input", function () {
-            if (password.value.length <= confirmPassword.value.length && confirmPassword.value !== password.value) {
-                registrationPasswordAlarm.style.cssText = 'display: block; background: #f29999;';
-                confirmPassword.style.cssText = "background-color: #f29999;";
-                passwordCheck = false;
-            }
-            else if (confirmPassword.value == password.value) {
-                registrationPasswordAlarm.style.display = 'none';
-                confirmPassword.style.cssText = "background-color: #1296d1;";
-                passwordCheck = true;
-            }
-        });
-        // send new user
-        registerButton.addEventListener("click", function () {
-            let allCheck = userName.value.length > 2 && passwordCheck && registerForm.checkValidity(); // return boolean 
-            let userExists = false;
-            let key;
-            for (const key in all_users) {
-                // Check if the username matches
-                if (userName.value === all_users[key].user_name) {
-                    userExists = true; // Set flag if the user exists
-                    registrationUserNameAlarm.classList.add("open");
-                    break; // Stop the loop if a match is found
+        return __awaiter(this, void 0, void 0, function* () {
+            let registerCard = document.querySelector("main .container .before_login .container .register");
+            let registerForm = document.querySelector(".register form");
+            let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
+            let password = registerCard.querySelector(".container .before_login .container .box .cont  .password");
+            let registerButton = document.querySelector("main .container .before_login .container .box  .register_button");
+            let confirmPassword = document.querySelector(".container .before_login .container .box .cont  .confirm_password");
+            let registrationPasswordAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.password");
+            let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName");
+            let passwordCheck = false;
+            // check password
+            confirmPassword.addEventListener("input", function () {
+                if (password.value.length <= confirmPassword.value.length &&
+                    confirmPassword.value !== password.value) {
+                    registrationPasswordAlarm.style.cssText =
+                        "display: block; background: #f29999;";
+                    confirmPassword.style.cssText = "background-color: #f29999;";
+                    passwordCheck = false;
                 }
-                else {
-                    registrationUserNameAlarm.classList.remove("open");
+                else if (confirmPassword.value == password.value) {
+                    registrationPasswordAlarm.style.display = "none";
+                    confirmPassword.style.cssText = "background-color: #1296d1;";
+                    passwordCheck = true;
                 }
-            }
-            if (!userExists && allCheck) {
-                if (module.sendUsers) {
-                    let date = new Date().getTime();
-                    newUserAddedTime = date;
-                    module.sendUsers(userName.value, password.value);
-                }
-                handleNewUser();
-                localStorage.setItem("loggedIn", "true");
-                localStorage.setItem("sender", userName.value);
-                CHeckIfAnyUserRegistered();
-                checkIfLogged('true');
-                userName.value = "";
-                password.value = "";
-                confirmPassword.value = "";
-                ChangeLoginPageButton.click();
-            }
+            });
+            // send new user
+            registerButton.addEventListener("click", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    let allCheck = userName.value.length > 2 &&
+                        passwordCheck &&
+                        registerForm.checkValidity(); // return boolean
+                    // let key: number | string;
+                    try {
+                        if (allCheck) {
+                            let result = yield registerHandle(userName.value, password.value);
+                            console.log("result", result);
+                            if (result.response == "user_name_founded") {
+                                registrationUserNameAlarm.classList.add("open");
+                            }
+                            else {
+                                registrationUserNameAlarm.classList.remove("open");
+                                // handleNewUser();
+                                localStorage.setItem("loggedIn", "true");
+                                localStorage.setItem("sender", userName.value);
+                                localStorage.setItem("sender_id", result.key);
+                                checkIfLogged('true');
+                                userName.value = "";
+                                password.value = "";
+                                confirmPassword.value = "";
+                                ChangeLoginPageButton.click();
+                            }
+                        }
+                    }
+                    catch (error) {
+                        console.error("Login error: ", error);
+                    }
+                });
+            });
         });
     }
     register();
+    /************** login **************/
     function login() {
-        /************** login **************/
-        let userNameInput = document.querySelector(".before_login .container .box form .cont .name");
-        let passwordInput = document.querySelector(".before_login .container .box form .cont .password");
-        let loginAlarm = document.querySelector(".container .before_login .container .box.logIn .cont .alarm");
-        let loginButton = document.querySelector("main .container .before_login .container .box  .login_button");
-        loginButton.addEventListener("click", function () {
-            for (const key in all_users) {
-                if (userNameInput.value == all_users[key].user_name && passwordInput.value == all_users[key].password) {
-                    loginAlarm.classList.remove("open");
-                    localStorage.setItem("loggedIn", 'true');
-                    localStorage.setItem("sender", userNameInput.value);
-                    localStorage.setItem("sender_id", key);
-                    checkIfLogged('true');
-                    userNameInput.value = "";
-                    passwordInput.value = "";
-                    return;
-                }
-                else if (userNameInput.value.length > 0 && passwordInput.value.length > 0) {
-                    // error
-                    loginAlarm.classList.add("open");
-                }
-            }
+        return __awaiter(this, void 0, void 0, function* () {
+            const userNameInput = document.querySelector(".before_login .container .box form .cont .name"); // Type assertion
+            const passwordInput = document.querySelector(".before_login .container .box form .cont .password"); // Type assertion
+            const loginAlarm = document.querySelector(".container .before_login .container .box.logIn .cont .alarm"); // Type assertion
+            const loginButton = document.querySelector("main .container .before_login .container .box  .login_button"); // Type assertion
+            loginButton.addEventListener("click", function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (userNameInput.value.length > 0 && passwordInput.value.length > 0) {
+                        try {
+                            // Await the result of the loginHandle function
+                            let result = yield loginHandle(userNameInput.value, passwordInput.value);
+                            if (result.Found == "true") {
+                                loginAlarm.classList.remove("open");
+                                localStorage.setItem("loggedIn", "true");
+                                localStorage.setItem("sender", userNameInput.value);
+                                localStorage.setItem("sender_id", result.user_id);
+                                checkIfLogged("true");
+                                userNameInput.value = "";
+                                passwordInput.value = "";
+                            }
+                            else {
+                                loginAlarm.classList.add("open");
+                            }
+                        }
+                        catch (error) {
+                            console.error("Login error: ", error);
+                        }
+                    }
+                    else {
+                        loginAlarm.classList.add("open");
+                    }
+                });
+            });
         });
     }
     login();
 }
-// register button handle
+// change between register and login button
 ChangeLoginPageButton.addEventListener("click", function () {
     let loginBox = document.querySelector(".logIn");
     let registerBox = document.querySelector(".register");
     if (loginBox.style.display == "none") {
-        loginBox.style.cssText = 'display: flex';
-        registerBox.style.cssText = 'display: none';
-        ChangeLoginPageButton.innerHTML = 'Register';
+        loginBox.style.cssText = "display: flex";
+        registerBox.style.cssText = "display: none";
+        ChangeLoginPageButton.innerHTML = "Register";
     }
     else {
-        loginBox.style.cssText = 'display: none';
-        registerBox.style.cssText = 'display: flex';
-        ChangeLoginPageButton.innerHTML = 'Login';
+        loginBox.style.cssText = "display: none";
+        registerBox.style.cssText = "display: flex";
+        ChangeLoginPageButton.innerHTML = "Login";
     }
 });
 // logout button handle
 logoutButton.addEventListener("click", function () {
     localStorage.setItem("loggedIn", "false");
-    localStorage.setItem("sender", 'null');
-    localStorage.setItem("sender_id", 'null');
-    localStorage.setItem("receiver", 'null');
-    localStorage.setItem("opened_chat", 'null');
-    checkIfLogged('false');
+    localStorage.setItem("sender", "null");
+    localStorage.setItem("sender_id", "null");
+    localStorage.setItem("receiver", "null");
+    localStorage.setItem("opened_chat", "null");
+    checkIfLogged("false");
 });
-function handleFriendsList(users) {
-    // console.log(users)
-    let addedFriends = [];
-    let friendsList = document.querySelector("main .container > .left .friends");
-    sender = localStorage.getItem("sender");
-    // console.log(sender)
-    friendsList.innerHTML = "";
-    for (const key in users) {
-        if (users[key].user_name != localStorage.getItem("sender") && localStorage.getItem("sender") !== (null || "null")) {
-            addedFriends.push(users[key].user_name);
-            let friend = document.createElement("div");
-            friend.className = "friend";
-            friend.setAttribute("id", key);
-            let userPhoto = document.createElement("img");
-            userPhoto.className = "user_photo";
-            userPhoto.src = "assets/imgs/user.png";
-            let cont = document.createElement("div");
-            cont.className = "cont";
-            let h1 = document.createElement("h1");
-            h1.className = "name";
-            h1.innerHTML = users[key].user_name;
-            // let h2 = document.createElement("h2")
-            // h2.classList = "last-message"
-            cont.appendChild(h1);
-            friend.appendChild(userPhoto);
-            friend.appendChild(cont);
-            friendsList.appendChild(friend);
+/********************* login and register page handle *********************/
+/********************* handle friends list *********************/
+function handleFriendsList() {
+    return __awaiter(this, void 0, void 0, function* () {
+        sender = localStorage.getItem("sender");
+        let users;
+        let apiResponse;
+        function GetAllUsers(sender) {
+            return __awaiter(this, void 0, void 0, function* () {
+                // API URL
+                const apiUrl = "http://127.0.0.1:8000/api/chat/getFriendsList/";
+                try {
+                    const response = yield fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            sender: sender
+                        }),
+                    });
+                    // Handle response
+                    const responseData = yield response.json();
+                    if (response.ok) {
+                        // console.log(`users: ${responseData.users}`);
+                        users = responseData.users;
+                        apiResponse = true;
+                        return responseData;
+                    }
+                    else {
+                        // console.log(`Error: ${responseData.error || "An error occurred"}`);
+                        apiResponse = false;
+                    }
+                }
+                catch (error) {
+                    // console.log(`Network Error: ${error.message}`);
+                    apiResponse = false;
+                }
+            });
         }
-    }
-    localStorage.setItem("addedFriends", JSON.stringify(addedFriends));
+        yield GetAllUsers(sender);
+        let friendsList = document.querySelector("main .container > .left .friends");
+        // console.log(apiResponse)
+        if (apiResponse) {
+            friendsList.innerHTML = "";
+            for (const key in users) {
+                let friend = document.createElement("div");
+                friend.className = "friend";
+                friend.setAttribute("id", key);
+                let userPhoto = document.createElement("img");
+                userPhoto.className = "user_photo";
+                userPhoto.src = "assets/imgs/user.png";
+                let cont = document.createElement("div");
+                cont.className = "cont";
+                let h1 = document.createElement("h1");
+                h1.className = "name";
+                h1.innerHTML = users[key].user_name;
+                // let h2 = document.createElement("h2")
+                // h2.classList = "last-message"
+                cont.appendChild(h1);
+                friend.appendChild(userPhoto);
+                friend.appendChild(cont);
+                friendsList.appendChild(friend);
+            }
+        }
+        else {
+            let errorH1 = document.createElement("h1");
+            errorH1.classList.add("friends_list_error");
+            errorH1.innerText = "Server Error";
+            friendsList.appendChild(errorH1);
+        }
+        localStorage.setItem("addedFriends", JSON.stringify(users));
+        handleChat();
+    });
 }
 /********************* handle friends list *********************/
 /********************* handle chat *********************/
@@ -357,9 +455,10 @@ function handleChat() {
     let chatBox = document.querySelector("main .container > .right");
     let friendsList = document.querySelectorAll("main .container > .left .friends .friend");
     chatBox.innerHTML = "";
-    friendsList.forEach(element => {
-        // console.log(element)
+    friendsList.forEach((element) => {
         element.addEventListener("click", function () {
+            let chat_id = Number(localStorage.getItem('opened_chat'));
+            stopListeningToChat(chat_id);
             if (windowWidth < 600) {
                 chatBox.style.cssText = "display: flex;";
                 element.parentElement.parentElement.style.cssText = "display: none;";
@@ -367,57 +466,55 @@ function handleChat() {
             let receiverName = element.querySelector(".name");
             const receiverId = element.getAttribute("id");
             const senderId = localStorage.getItem("sender_id");
+            const receiverLastFourNums = receiverId.slice(-2);
+            const senderLastFourNums = senderId.slice(-2);
+            const chatId = +receiverLastFourNums + +senderLastFourNums;
+            localStorage.setItem("opened_chat", chatId.toString());
             localStorage.setItem("receiver", receiverName.innerHTML);
-            if (receiverId && senderId) {
-                const receiverLastFourNums = receiverId.slice(-2);
-                const senderLastFourNums = senderId.slice(-2);
-                const chatId = +receiverLastFourNums + +senderLastFourNums;
-                localStorage.setItem("opened_chat", chatId.toString());
-            }
             chatBox.innerHTML = "";
             // Creating the header
-            const header = document.createElement('header');
+            const header = document.createElement("header");
             // Left part of the header
-            const leftDiv = document.createElement('div');
-            leftDiv.className = 'left';
-            const userImg = document.createElement('img');
-            userImg.src = 'assets/imgs/user.png';
-            userImg.alt = 'user-photo';
-            const userCont = document.createElement('div');
-            userCont.className = 'cont';
-            const userName = document.createElement('h2');
-            userName.className = 'name';
+            const leftDiv = document.createElement("div");
+            leftDiv.className = "left";
+            const userImg = document.createElement("img");
+            userImg.src = "assets/imgs/user.png";
+            userImg.alt = "user-photo";
+            const userCont = document.createElement("div");
+            userCont.className = "cont";
+            const userName = document.createElement("h2");
+            userName.className = "name";
             userName.innerHTML = element.querySelector(".name").innerHTML;
             userCont.appendChild(userName);
             leftDiv.appendChild(userImg);
             leftDiv.appendChild(userCont);
             // Right part of the header
-            const rightDiv = document.createElement('div');
-            rightDiv.className = 'right';
+            const rightDiv = document.createElement("div");
+            rightDiv.className = "right";
             let width = screen.width;
             if (width <= 600) {
-                const searchImg = document.createElement('img');
-                searchImg.src = 'assets/imgs/cross.png';
-                searchImg.alt = 'exit-chat';
+                const searchImg = document.createElement("img");
+                searchImg.src = "assets/imgs/cross.png";
+                searchImg.alt = "exit-chat";
                 rightDiv.appendChild(searchImg);
             }
             // Append left and right parts to the header
             header.appendChild(leftDiv);
             header.appendChild(rightDiv);
             // Create the send message section
-            const sendMessageDiv = document.createElement('div');
-            sendMessageDiv.className = 'send_message';
-            const formSendMessageDiv = document.createElement('form');
+            const sendMessageDiv = document.createElement("div");
+            sendMessageDiv.className = "send_message";
+            const formSendMessageDiv = document.createElement("form");
             formSendMessageDiv.onsubmit = () => false;
-            const messageInput = document.createElement('input');
-            messageInput.type = 'text';
-            messageInput.placeholder = 'send message';
+            const messageInput = document.createElement("input");
+            messageInput.type = "text";
+            messageInput.placeholder = "send message";
             messageInput.required = true;
             // <input type="image" src="path/to/your/image.png" alt="Submit" />
-            const sendImg = document.createElement('input');
-            sendImg.type = 'image';
-            sendImg.src = 'assets/imgs/send.png';
-            sendImg.alt = 'Submit';
+            const sendImg = document.createElement("input");
+            sendImg.type = "image";
+            sendImg.src = "assets/imgs/send.png";
+            sendImg.alt = "Submit";
             formSendMessageDiv.appendChild(messageInput);
             formSendMessageDiv.appendChild(sendImg);
             sendMessageDiv.appendChild(formSendMessageDiv);
@@ -426,124 +523,103 @@ function handleChat() {
             chatBox.appendChild(sendMessageDiv);
             allowed = true;
             sendMessage();
-            viewMessages();
+            getNewOpenChatMessages(chatId);
             if (width <= 600) {
                 // handle close chat
                 let exitButton = document.querySelector("main > .container > .right header .right img");
                 exitButton.addEventListener("click", function () {
                     chatBox.style.cssText = "display: none;";
-                    element.parentElement.parentElement.style.cssText = "display: flex;";
+                    element.parentElement.parentElement.style.cssText =
+                        "display: flex;";
                 });
             }
-            CHeckIfAnyChangesInChatsListener();
+            // CHeckIfAnyChangesInChatsListener();
         });
     });
-}
-// handle send message
-function sendMessage() {
-    let input = document.querySelector("main .container > .right .send_message input");
-    let img = document.querySelector('main .container > .right .send_message input[type="image"]');
-    let form = document.querySelector('main .container > .right .send_message form');
-    form.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevents the form from submitting
-    });
-    img.addEventListener("click", function () {
-        let receiver = localStorage.getItem("receiver");
-        const openedChat = localStorage.getItem("opened_chat");
-        const message = input.value;
-        if (openedChat && message && receiver && module.sendMsg) {
-            // Call the function with the correct parameters
-            module.sendMsg(Number(openedChat), message, receiver);
-            input.value = "";
-        }
-        else {
-            // Handle cases where one of the values might be null or undefined
-            console.error("Error: One or more required values are missing.");
-        }
-    });
+    // handle send message
+    function sendMessage() {
+        let input = document.querySelector("main .container > .right .send_message input");
+        let img = document.querySelector('main .container > .right .send_message input[type="image"]');
+        let form = document.querySelector("main .container > .right .send_message form");
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevents the form from submitting
+        });
+        img.addEventListener("click", function () {
+            let receiver = localStorage.getItem("receiver");
+            const openedChat = localStorage.getItem("opened_chat");
+            const message = input.value;
+            if (openedChat && message && receiver) {
+                // Call the function with the correct parameters
+                sendMsg(Number(openedChat), message, receiver);
+                input.value = "";
+            }
+            else {
+                // Handle cases where one of the values might be null or undefined
+                console.error("Error: One or more required values are missing.");
+            }
+        });
+    }
 }
 // handle view messages
-function viewMessages() {
-    var _a, _b;
-    let sender = localStorage.getItem("sender");
-    let receiver = localStorage.getItem("receiver");
-    let rightDiv = document.querySelector("main .container > .right");
-    let existChatDiv = document.querySelector("main .container > .right .chat");
-    if (existChatDiv !== null) {
-        existChatDiv.remove();
-    }
-    // Create the chat section
-    const chatDiv = document.createElement('div');
-    chatDiv.className = 'chat';
-    let chatId = JSON.parse((_a = localStorage.getItem("opened_chat")) !== null && _a !== void 0 ? _a : "[]");
-    let allChats = JSON.parse((_b = localStorage.getItem("chats")) !== null && _b !== void 0 ? _b : "[]");
-    if (allChats[chatId] !== undefined) {
-        for (const key in allChats[chatId]) {
-            // console.log(allChats[chatId])
+function viewMessages(messageKey, newMessageData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let sender = localStorage.getItem("sender");
+        let receiver = localStorage.getItem("receiver");
+        let rightDiv = document.querySelector("main .container > .right");
+        let chatDiv = document.querySelector("main .container > .right .chat");
+        if (chatDiv == null) {
+            chatDiv = document.createElement("div");
+            chatDiv.className = "chat";
+        }
+        if (newMessageData && typeof newMessageData === "object") {
+            let key = messageKey;
             let dateObj = new Date(+key);
             let options = {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
+                hour: "numeric",
+                minute: "numeric",
+                hour12: true,
             };
-            let formattedDate = dateObj.toLocaleString('en-US', options);
-            // Friend's message
-            if (allChats[chatId][key].receiver == sender) {
-                const friendMessageDiv = document.createElement('div');
-                friendMessageDiv.className = 'friend_message';
-                var friendCont = document.createElement('div');
-                friendCont.className = 'cont';
-                var friendContent = document.createElement('h3');
-                friendContent.className = 'content';
-                friendContent.textContent = allChats[chatId][key].msg;
-                const friendDate = document.createElement('h4');
-                friendDate.className = 'date';
+            let formattedDate = dateObj.toLocaleString("en-US", options);
+            // console.log(chatDiv)
+            if (newMessageData.receiver === sender) {
+                const friendMessageDiv = document.createElement("div");
+                friendMessageDiv.className = "friend_message";
+                const friendCont = document.createElement("div");
+                friendCont.className = "cont";
+                const friendContent = document.createElement("h3");
+                friendContent.className = "content";
+                friendContent.textContent = newMessageData.msg;
+                const friendDate = document.createElement("h4");
+                friendDate.className = "date";
                 friendDate.innerText = formattedDate;
                 friendCont.appendChild(friendContent);
                 friendCont.appendChild(friendDate);
                 friendMessageDiv.appendChild(friendCont);
                 chatDiv.appendChild(friendMessageDiv);
             }
-            // My message
-            if (sender == allChats[chatId][key].sender) {
-                const myMessageDiv = document.createElement('div');
-                myMessageDiv.className = 'my_message';
-                const myCont = document.createElement('div');
-                myCont.className = 'cont';
-                const myContent = document.createElement('h3');
-                myContent.className = 'content';
-                myContent.textContent = allChats[chatId][key].msg;
-                const myDate = document.createElement('h4');
-                myDate.className = 'date';
+            if (sender === newMessageData.sender) {
+                const myMessageDiv = document.createElement("div");
+                myMessageDiv.className = "my_message";
+                const myCont = document.createElement("div");
+                myCont.className = "cont";
+                const myContent = document.createElement("h3");
+                myContent.className = "content";
+                myContent.textContent = newMessageData.msg;
+                const myDate = document.createElement("h4");
+                myDate.className = "date";
                 myDate.textContent = formattedDate;
                 myCont.appendChild(myContent);
                 myCont.appendChild(myDate);
                 myMessageDiv.appendChild(myCont);
-                // Append messages to chat
                 chatDiv.appendChild(myMessageDiv);
             }
-            rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
+            if (rightDiv.children.length == 2) {
+                rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
+            }
         }
-    }
-    chatDiv.scrollTop = chatDiv.scrollHeight;
+        else {
+            console.error("Failed to fetch or process chat messages.");
+        }
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
 }
-// if (!("Notification" in window)) {
-//     console.log("This browser does not support desktop notifications");
-//   }
-// Notification.requestPermission().then(permission => {
-//     if (permission === "granted") {
-//     console.log("User granted permission to send notifications");
-//     } else {
-//     console.log("User denied permission to send notifications");
-//     }
-// });
-// if (Notification.permission === "granted") {
-//     const notification = new Notification("Hello!", {
-//     // body: `new message from ${} : ${}`,
-//     // icon: "https://example.com/icon.png" // Optional, to include an icon
-//     });
-//     // Optional: handle click event
-//     notification.onclick = function() {
-//     window.open("https://yourwebsite.com"); // Redirects when the user clicks the notification
-//     };
-// }

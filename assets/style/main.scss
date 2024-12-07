@@ -113,6 +113,11 @@ main{
                         font-size: 13px;
                     }
                 }
+                & .friends_list_error {
+                    color: #f24d4d;
+                    text-align: center;
+                    margin-top: 50px;
+                }
             }
         }
 

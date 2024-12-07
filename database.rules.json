@@ -1,0 +1,11 @@
+{
+  "rules": {
+    // ".read": "now < 1727384400000",  // 2024-9-27
+    // ".write": "now < 1727384400000",  // 2024-9-27
+    ".read": true, 
+    ".write": true,
+    "users": {
+      ".indexOn": "user_name"
+    }
+  }
+}
