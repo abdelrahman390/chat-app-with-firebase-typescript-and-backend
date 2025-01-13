@@ -14,7 +14,7 @@
 // module.exports = { firebaseAdmin, db };
 
 import admin from "firebase-admin";
-import serviceAccount from "./firebase_credentials/service-account.json" assert { type: "json" };
+import serviceAccount from "./chat-app-7742a-firebase-adminsdk-5j6hs-3a8882f453.json" assert { type: "json" };
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -24,3 +24,4 @@ admin.initializeApp({
 const db = admin.database();
 
 export { admin as firebaseAdmin, db };
+// module.exports = { firebaseAdmin, db };

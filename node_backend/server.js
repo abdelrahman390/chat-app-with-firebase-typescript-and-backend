@@ -2,6 +2,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import { firebaseAdmin, db } from "./firebase.js";
+// import firebase_admin from firebase_admin import credentials
 
 const app = express();
 const port = process.env.PORT || 3002;
@@ -10,7 +11,8 @@ const port = process.env.PORT || 3002;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://127.0.0.1:5500", // Allow your HTML client's origin
+    // origin: "http://127.0.0.1:5500", // Allow your HTML client's origin
+    origin: '*',
     methods: ["GET", "POST"],
   },
 });
