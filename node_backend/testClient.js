@@ -1,18 +1,44 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3002"); // Connect to your server
+// Replace with your server's URL and port
+const SERVER_URL = "http://localhost:3002";
+
+const socket = io(SERVER_URL, {
+	reconnectionAttempts: 10, // Retry 5 times if the connection fails
+	timeout: 2000, // Wait 5 seconds for a connection
+});
 
 socket.on("connect", () => {
-  console.log("Connected to the server:", socket.id);
+	console.log("Connected to the server. Socket ID:", socket.id);
 
-  // Emit a test event (optional, if server expects specific events)
-  // socket.emit("testEvent", { data: "Test Data" });
+	socket.on("newMessage", (data) => {
+		console.log("New message:", data);
+	});
+
+	// Test the 'getChats' event
+	const testUserId = "1725483302639"; // Replace  with a test userId
+	socket.emit("getChats", testUserId, (response) => {
+		if (response.success) {
+			console.log("Chats received from server:", response);
+		} else {
+			console.error("Failed to get chats:", response.message);
+		}
+	});
 });
 
-socket.on("newMessage", (message) => {
-  console.log("New message received:", message);
+// Listen for connection errors
+socket.on("connect_error", (error) => {
+	console.error("Connection error:", error.message);
 });
 
+// Listen for disconnect events
 socket.on("disconnect", () => {
-  console.log("Disconnected from server");
+	console.log("Disconnected from the server.");
+});
+
+// Handle SIGINT to disconnect cleanly
+process.on("SIGINT", () => {
+	console.log("Shutting down test client...");
+	socket.disconnect();
+	process.exit();
 });

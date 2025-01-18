@@ -26,11 +26,11 @@ def save_message(messageData):
             "sender": messageData['sender'],
             "receiver": messageData['receiver']
         }
-        messageTime = messageData['messageTime']
+        messageTime = messageData['messageId']
         db.child("chats").child(messageData['chatId']).child(messageTime).set(messageDataHandle)
         # If successful, return confirmation
         # print(f"Message saved successfully from firebase: {messageData}")
-        return {"success": True, "message": f"Message saved successfully! {messageTime}"}
+        return {"success": True, "message": f"Message saved successfully!"}
     except Exception as e:
         # print(f"Error saving message: {str(e)}")
         return {"success": False, "error": str(e)}
@@ -40,7 +40,7 @@ def get_opened_chat_message(chatId):
         chat_messages = db.child("chats").child(chatId['chat_id']).get().val()
         # If successful, return confirmation
         if chat_messages != None :
-            print('chat_messages', len(chat_messages))
+            # print('chat_messages', chat_messages)
             # for user_id, user_data in chat_messages.items():
             #     print("chat_messages", user_data)
             return {"success": True, "message": chat_messages}
@@ -55,8 +55,8 @@ def users_login(messageData):
         userCheck = db.child('users').order_by_child('user_name').equal_to(messageData['user_name']).get()
 
         # Check if the user exists
-        print("user ok")
         if userCheck.val() != []:
+            # print("user ok")
             # The data exists; check the password
             for user_id, user_data in userCheck.val().items():
                 if user_data['password'] == messageData['password']:
@@ -101,12 +101,12 @@ def get_fiendsList(messageData):
         # Check if the user exists
         # print(userCheck)
         # return {"success": True, "userCheck": userCheck}
-        users = {}
+        users = list()
         if userCheck != []:
             # get users which not equal to sender
             for user_id, user_data in userCheck.items():
                 if user_data['user_name'] != messageData['sender']:
-                    users[user_id] = user_data
+                    users.append({"id": user_id, 'user_name': user_data['user_name']})
             return {"success": True, "users": users}
         else:
             return {"success": True}
@@ -114,3 +114,26 @@ def get_fiendsList(messageData):
     except Exception as e:
         # print(f"Error saving message: {str(e)}")
         return {"success": False, "error": str(e)}
+
+
+# def get_fiendsListForNativeApp(requiredChats):
+#     try:
+#         # Direct Firebase interaction
+#         userCheck = db.child('users').get().val()
+
+#         # Check if the user exists
+#         # print(userCheck)
+#         # return {"success": True, "userCheck": userCheck}
+#         users = list()
+#         if userCheck != []:
+#             # get users which not equal to sender
+#             for user_id, user_data in userCheck.items():
+#                 if user_data['user_name'] != messageData['sender']:
+#                     users.append({"id": user_id, 'user_name': user_data['user_name']})
+#             return {"success": True, "users": users}
+#         else:
+#             return {"success": True}
+        
+#     except Exception as e:
+#         # print(f"Error saving message: {str(e)}")
+#         return {"success": False, "error": str(e)}

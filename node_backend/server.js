@@ -2,85 +2,136 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import { firebaseAdmin, db } from "./firebase.js";
-// import firebase_admin from firebase_admin import credentials
 
 const app = express();
 const port = process.env.PORT || 3002;
 
-// Create an HTTP server and attach Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    // origin: "http://127.0.0.1:5500", // Allow your HTML client's origin
-    origin: '*',
-    methods: ["GET", "POST"],
-  },
+	cors: {
+		origin: "*",
+		methods: ["GET", "POST"],
+	},
 });
 
-// Middleware to parse JSON
 app.use(express.json());
 
-// Define a route for the root URL
 app.get("/", (req, res) => {
-  res.send("Welcome to the Firebase Chat API with Socket.IO!");
+	res.send("Welcome to the Firebase Chat API with Socket.IO!");
 });
 
-// Store active listeners for each chat
-const activeListeners = {};
+let requiredChats = [];
 
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+	console.log(`User ${socket.id} connected`);
+	const listenToChat = (chatId) => {
+		try {
+			const chatRef = db.ref(`chats/${chatId}`);
+			let isFirstMessage = true;
+			chatRef
+				.orderByKey()
+				.limitToLast(1)
+				.on("child_added", (snapshot) => {
+					try {
+						const message = snapshot.val(); // The message object
 
-  // Listen for subscription
-  socket.on("subscribeToChat", (chatId) => {
-    console.log(`User ${socket.id} subscribed to chat: ${chatId}`);
+						// Skip the first message
+						if (isFirstMessage) {
+							// console.log(`Skipping initial message in chat ${chatId}:`,	message );
+							isFirstMessage = false; // Flip the flag after the first message
+							return; // Do not emit this message
+						}
 
-    if (!activeListeners[chatId]) {
-      activeListeners[chatId] = {};
-    }
+						// console.log(`New message in chat ${chatId}:`, message);
+						io.to(chatId).emit("newMessage", { chatId, message }); // Emit new messages
+						// console.log("#########################");
+					} catch (err) {
+						console.error(
+							`Error processing new message for chat ${chatId}:`,
+							err
+						);
+					}
+				});
+		} catch (err) {
+			console.error(`Error setting up listener for chat ${chatId}:`, err);
+		}
+	};
 
-    // If this socket already has a listener, do nothing
-    if (activeListeners[chatId][socket.id]) return;
+	socket.on("getChats", async (userId, callback) => {
+		console.log("Received getChats request for userId:", userId);
 
-    // Firebase listener for real-time updates
-    const chatRef = db.ref(`chats/${chatId}`);
-    const listener = (snapshot) => {
-      const newMessage = snapshot.val();
-      const messageKey = snapshot.key;
-      console.log("New message added:", newMessage);
+		try {
+			if (!userId || typeof userId !== "string") {
+				throw new Error("Invalid userId");
+			}
 
-      // Emit the new message to the specific socket
-      socket.emit("newMessage", { id: messageKey, Data: { ...newMessage } });
-    };
+			const usersRef = db.ref("users");
+			const usersSnapshot = await usersRef.once("value");
+			const allUsers = usersSnapshot.val();
 
-    // Add Firebase listener
-    chatRef.on("child_added", listener);
-    activeListeners[chatId][socket.id] = { ref: chatRef, listener };
+			if (allUsers) {
+				for (const key in allUsers) {
+					if (key !== userId) {
+						const chatId = +userId.slice(-2) + +key.slice(-2);
+						requiredChats.push(chatId);
+					}
+				}
 
-    // Handle disconnection cleanup
-    socket.on("disconnect", () => {
-      console.log(`User ${socket.id} disconnected`);
-      if (activeListeners[chatId][socket.id]) {
-        chatRef.off("child_added", listener);
-        delete activeListeners[chatId][socket.id];
-      }
-    });
-  });
+				let allChats = {};
+				const getEveryChatData = async (chatId) => {
+					try {
+						const chatRef = db.ref(`chats/${chatId}`);
+						const chatSnapshot = await chatRef.once("value");
+						allChats[chatId] = Object.values(chatSnapshot.val() || {});
+					} catch (err) {
+						console.error(`Error fetching chat data for chat ${chatId}:`, err);
+					}
+				};
 
-  // Listen for unsubscription
-  socket.on("unsubscribeFromChat", (chatId) => {
-    console.log(`User ${socket.id} unsubscribed from chat: ${chatId}`);
+				const fetchAllChats = async () => {
+					for (const chatId of requiredChats) {
+						await getEveryChatData(chatId);
+						socket.join(chatId);
+						listenToChat(chatId);
+					}
+					callback({ success: true, allChats });
+				};
 
-    if (activeListeners[chatId] && activeListeners[chatId][socket.id]) {
-      const { ref, listener } = activeListeners[chatId][socket.id];
-      ref.off("child_added", listener);
-      delete activeListeners[chatId][socket.id];
-      console.log(`Listener removed for chat: ${chatId}, socket: ${socket.id}`);
-    }
-  });
+				fetchAllChats();
+			} else {
+				console.warn(`No users found for userId: ${userId}`);
+				callback({ success: false, message: "No chats found" });
+			}
+		} catch (err) {
+			console.error("Error handling getChats request:", err);
+			callback({
+				success: false,
+				message: "Error fetching chats",
+				error: err.message,
+			});
+		}
+	});
+
+	socket.on("disconnect", () => {
+		console.log(`User ${socket.id} disconnected`);
+		requiredChats.forEach((chatId) => {
+			const chatRef = db.ref(`chats/${chatId}`);
+			chatRef.off("child_added");
+			console.log(`Listener for chat ${chatId} removed`);
+		});
+		requiredChats = [];
+	});
+
+	process.on("SIGINT", () => {
+		requiredChats.forEach((chatId) => {
+			const chatRef = db.ref(`chats/${chatId}`);
+			chatRef.off("child_added");
+		});
+		console.log("Server shutting down. Removed all listeners.");
+		process.exit();
+	});
 });
 
-// Start the server
 server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+	console.log(`Server is running on port ${port}`);
 });

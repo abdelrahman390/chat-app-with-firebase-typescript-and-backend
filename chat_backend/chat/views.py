@@ -25,7 +25,8 @@ class GetMessageFromUser(APIView):
 class OpenedChatMessages(APIView):
     def post(self, request):
         if 'chat_id' not in request.data :
-            return Response({"error": "Missing 'chatId'"}, status=400)
+            print(request.data)
+            return Response({"error": "Missing 'chat_id'"}, status=400)
         try:
             # get_opened_chat_message(request.data)
             result = get_opened_chat_message(request.data)
@@ -44,8 +45,10 @@ class UsersLogin(APIView):
         try:
             result = users_login(request.data)
             if result["success"]:
+                # print({"Found": "true", "user_id": result["user_id"]})
                 return Response({"Found": "true", "user_id": result["user_id"]}, status=200)
             else:
+                # print("error")
                 return Response({"Found": "false"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
@@ -81,3 +84,17 @@ class getFriendsList(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+
+
+# class getFriendsListForNativeApp(APIView):
+#     def post(self, request):
+#         print("Request data:", request.data)
+
+#         if 'sender' not in request.data :
+#             return Response({"error": "Missing 'sender' "}, status=400)
+
+#         try:
+#             result = get_fiendsList(request.data)
+#             return JsonResponse(result, status=200)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=500)

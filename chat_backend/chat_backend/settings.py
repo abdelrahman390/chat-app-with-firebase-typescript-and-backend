@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-oc1x522rb4j_5l5f29-fe5^!--74efgzkp1nd7i6%(@)yn3v4#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -58,12 +58,21 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.102']
+ALLOWED_HOSTS = ['*']
+
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:3000",
     "http://127.0.0.1:5500",  # Your JavaScript file's live view URL
     "http://localhost:5500",
+    'http://localhost:19006',
+    "http://192.168.1.102:8000",
+    "http://192.168.1.102:8000",
+    'http://192.168.1.102:19000',
+
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_METHODS = [
     "GET",
