@@ -20,8 +20,24 @@ app.get("/", (req, res) => {
 	res.send("Welcome to the Firebase Chat API with Socket.IO!");
 });
 
-let requiredChats = [];
+io.use((socket, next) => {
+	const authData = socket.handshake.auth;
+	let { token, userId } = authData;
+	// console.log(token, userId);
+	async function checkForCredentials() {
+		const usersRef = db.ref(`tokens/${userId}`);
+		const usersSnapshot = await usersRef.once("value");
+		const storedToken = usersSnapshot.val();
+		if (storedToken === token) {
+			return next(); // Credentials are valid, proceed
+		} else {
+			return next(new Error("Invalid credentials")); // Invalid credentials
+		}
+	}
+	checkForCredentials();
+});
 
+let requiredChats = [];
 io.on("connection", (socket) => {
 	console.log(`User ${socket.id} connected`);
 	const listenToChat = (chatId) => {
@@ -42,7 +58,7 @@ io.on("connection", (socket) => {
 							return; // Do not emit this message
 						}
 
-						// console.log(`New message in chat ${chatId}:`, message);
+						console.log(`New message in chat ${chatId}:`, message);
 						io.to(chatId).emit("newMessage", { chatId, message }); // Emit new messages
 						// console.log("#########################");
 					} catch (err) {

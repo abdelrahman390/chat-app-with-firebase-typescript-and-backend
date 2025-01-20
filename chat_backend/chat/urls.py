@@ -5,6 +5,7 @@ from .views import OpenedChatMessages
 from .views import UsersLogin
 from .views import Signup
 from .views import getFriendsList
+# from .views import test
 
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path("Signup/", Signup.as_view(), name="Signup"),
     path("OpenedChatMessages/", OpenedChatMessages.as_view(), name="OpenedChatMessages"),
     path("getFriendsList/", getFriendsList.as_view(), name="getFriendsList"),
+    # path("test/", test.as_view(), name="test"),
 ]

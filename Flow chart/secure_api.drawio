@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="ZV3ijpE8iqyiIdE93A6_" name="Page-1">
-        <mxGraphModel dx="703" dy="414" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="771" dy="585" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -22,29 +22,41 @@
                 <mxCell id="5" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;login successfully&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
                     <mxGeometry x="160" y="120" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="22" value="" style="edgeStyle=none;html=1;fontSize=14;" edge="1" parent="1" source="14" target="21">
+                <mxCell id="22" value="" style="edgeStyle=none;html=1;fontSize=14;" parent="1" source="14" target="21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="1 - save IP adress that user login in with in database&lt;br&gt;2 - generate 1 section tocken and save it in database" style="whiteSpace=wrap;html=1;rounded=0;align=center;" parent="1" vertex="1">
+                <mxCell id="14" value="1 - save IP adress that user login in with in database&lt;br&gt;2 - generate token and save it in database" style="whiteSpace=wrap;html=1;rounded=0;align=center;" parent="1" vertex="1">
                     <mxGeometry x="150" y="180" width="140" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="24" value="" style="edgeStyle=none;html=1;fontSize=14;" edge="1" parent="1" source="21" target="23">
+                <mxCell id="24" value="" style="edgeStyle=none;html=1;fontSize=14;" parent="1" source="21" target="23" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="21" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;span style=&quot;color: rgb(255, 255, 255); font-family: Helvetica; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;send the 1 section tocken&amp;nbsp;&lt;br&gt;to Front-end&amp;nbsp;&lt;/span&gt;&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+                <mxCell id="21" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;span style=&quot;color: rgb(255, 255, 255); font-family: Helvetica; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;send the token&amp;nbsp;&lt;br&gt;to Front-end or app&lt;/span&gt;&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="155" y="310" width="130" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="23" value="any other API authentecation will require tocken and IP adress" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+                <mxCell id="23" value="any other API authentecation will require token and IP adress" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="157.5" y="420" width="125" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="28" value="" style="edgeStyle=none;html=1;fontSize=14;" edge="1" parent="1" source="26" target="27">
+                <mxCell id="28" value="" style="edgeStyle=none;html=1;fontSize=14;" parent="1" source="26" target="27" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="26" value="when user open the website" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontSize=14;" vertex="1" parent="1">
+                <mxCell id="26" value="any api from app&lt;br&gt;with token" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontSize=14;" parent="1" vertex="1">
                     <mxGeometry x="350" y="15" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="27" value="" style="whiteSpace=wrap;html=1;fontSize=14;rounded=0;labelBackgroundColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="350" y="130" width="120" height="60" as="geometry"/>
+                <mxCell id="30" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="27" target="29">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;while logIn if all&amp;nbsp;credentials are correct&lt;/font&gt;" style="whiteSpace=wrap;html=1;fontSize=14;rounded=0;labelBackgroundColor=none;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="130" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="" style="edgeStyle=none;html=1;fontSize=16;" edge="1" parent="1" source="29" target="31">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;call the function that generates user token&amp;nbsp;&lt;br&gt;this func returns token&amp;nbsp;&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fontSize=14;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=0;labelBackgroundColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="240" width="150" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="&lt;font style=&quot;font-size: 16px;&quot;&gt;in login api func &amp;gt;&amp;gt; when get user token&lt;br&gt;save it in firebase like that:&lt;br&gt;userId: {&lt;br&gt;{&lt;br&gt;device_ip&lt;br&gt;token&lt;br&gt;},&lt;br&gt;}&lt;br&gt;###############&lt;br&gt;send this token to user front-end&lt;br&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fontSize=14;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;rounded=0;labelBackgroundColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="320" y="390" width="262.5" height="250" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
