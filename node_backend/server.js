@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
 							return; // Do not emit this message
 						}
 
-						console.log(`New message in chat ${chatId}:`, message);
+						// console.log(`New message in chat ${chatId}:`, message);
 						io.to(chatId).emit("newMessage", { chatId, message }); // Emit new messages
 						// console.log("#########################");
 					} catch (err) {
