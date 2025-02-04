@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -11,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 // variables
 let msgTxt = document.querySelector("main .container > .right .send_message input"), sendButton = document.querySelector("main .container > .right .send_message img"), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") ||
     document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") ||
-    document.querySelector("main .container .logout"), windowWidth = window.innerWidth;
+    document.querySelector("main .container .logout"), windowWidth = window.innerWidth, ipv4 = "192.168.1.102";
 if (localStorage.getItem("sender") !== null) {
     sender = localStorage.getItem("sender");
 }
@@ -26,7 +25,7 @@ const module = {}; // Declare module with
 function sendMsg(chatId, message, receiver) {
     return __awaiter(this, void 0, void 0, function* () {
         // API URL
-        const apiUrl = "http://127.0.0.1:8000/api/chat/save-message/";
+        const apiUrl = `http://${ipv4}:8000/api/chat/save-message/`;
         let sender = localStorage.getItem("sender");
         var BigDate = new Date();
         var date = BigDate.toLocaleString();
@@ -62,11 +61,10 @@ function sendMsg(chatId, message, receiver) {
     });
 }
 // Send message Django api
-// async function getOpenChatMessageApi(chatId: any): Promise<Record<string, any> | null> {
 function getOpenChatMessageApi(chatId) {
     return __awaiter(this, void 0, void 0, function* () {
         // API URL
-        const apiUrl = "http://127.0.0.1:8000/api/chat/OpenedChatMessages/";
+        const apiUrl = `http://${ipv4}:8000/api/chat/OpenedChatMessages/`;
         try {
             const response = yield fetch(apiUrl, {
                 method: "POST",
@@ -74,7 +72,7 @@ function getOpenChatMessageApi(chatId) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    chat_id: chatId
+                    chat_id: chatId,
                 }),
             });
             // Handle response
@@ -92,7 +90,7 @@ function getOpenChatMessageApi(chatId) {
         }
     });
 }
-const socket = io("http://localhost:3002");
+const socket = io(`http://${ipv4}:3002`);
 function getNewOpenChatMessages(chatId) {
     console.log("Attempting to listen for messages on chat:", chatId);
     // Ensure the socket is connected before subscribing
@@ -127,15 +125,11 @@ function stopListeningToChat(chatId) {
     console.log(`Unsubscribing from chat: ${chatId}`);
     socket.emit("unsubscribeFromChat", chatId.toString());
 }
-// Example usage: stop listening to chat "98" after 10 seconds
-// setTimeout(() => {
-//     stopListeningToChat(119);
-// }, 10000);
-// Login handle 
+// Login handle
 function loginHandle(user_name, password) {
     return __awaiter(this, void 0, void 0, function* () {
         // API URL
-        const apiUrl = "http://127.0.0.1:8000/api/chat/login/";
+        const apiUrl = `http://${ipv4}:8000/api/chat/login/`;
         try {
             const response = yield fetch(apiUrl, {
                 method: "POST",
@@ -145,11 +139,14 @@ function loginHandle(user_name, password) {
                 body: JSON.stringify({
                     user_name: user_name,
                     password: password,
+                    Platform: "web",
                 }),
+                credentials: "include",
             });
             // Handle response
             const responseData = yield response.json();
             // console.log(responseData);
+            console.log("Cookies sent:", document.cookie);
             if (response.ok) {
                 console.log(`Success: ${JSON.stringify(responseData)}`);
                 return responseData;
@@ -163,11 +160,11 @@ function loginHandle(user_name, password) {
         }
     });
 }
-// Login handle 
+// Login handle
 function registerHandle(user_name, password) {
     return __awaiter(this, void 0, void 0, function* () {
         // API URL
-        const apiUrl = "http://127.0.0.1:8000/api/chat/Signup/";
+        const apiUrl = `http://${ipv4}:8000/api/chat/Signup/`;
         try {
             const response = yield fetch(apiUrl, {
                 method: "POST",
@@ -177,6 +174,7 @@ function registerHandle(user_name, password) {
                 body: JSON.stringify({
                     user_name: user_name,
                     password: password,
+                    Platform: "web",
                 }),
             });
             // Handle response
@@ -294,7 +292,7 @@ function loginAndRegister() {
                                 localStorage.setItem("loggedIn", "true");
                                 localStorage.setItem("sender", userName.value);
                                 localStorage.setItem("sender_id", result.key);
-                                checkIfLogged('true');
+                                checkIfLogged("true");
                                 userName.value = "";
                                 password.value = "";
                                 confirmPassword.value = "";
@@ -324,13 +322,13 @@ function loginAndRegister() {
                             // Await the result of the loginHandle function
                             let result = yield loginHandle(userNameInput.value, passwordInput.value);
                             if (result.Found == "true") {
-                                loginAlarm.classList.remove("open");
-                                localStorage.setItem("loggedIn", "true");
-                                localStorage.setItem("sender", userNameInput.value);
-                                localStorage.setItem("sender_id", result.user_id);
-                                checkIfLogged("true");
-                                userNameInput.value = "";
-                                passwordInput.value = "";
+                                // loginAlarm.classList.remove("open");
+                                // localStorage.setItem("loggedIn", "true");
+                                // localStorage.setItem("sender", userNameInput.value);
+                                // localStorage.setItem("sender_id", result.user_id);
+                                // checkIfLogged("true");
+                                // userNameInput.value = "";
+                                // passwordInput.value = "";
                             }
                             else {
                                 loginAlarm.classList.add("open");
@@ -383,32 +381,37 @@ function handleFriendsList() {
         function GetAllUsers(sender) {
             return __awaiter(this, void 0, void 0, function* () {
                 // API URL
-                const apiUrl = "http://127.0.0.1:8000/api/chat/getFriendsList/";
+                console.log(`ipv4: ${ipv4}`);
+                const apiUrl = `http://${ipv4}:8000/api/chat/getFriendsList/`;
                 try {
+                    // const csrfData = await apiUrl.json();
+                    // const csrfToken = csrfData.csrfToken;
                     const response = yield fetch(apiUrl, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            // "X-CSRFToken": csrfToken,
                         },
+                        credentials: "include",
                         body: JSON.stringify({
-                            sender: sender
+                            sender: sender,
                         }),
                     });
                     // Handle response
                     const responseData = yield response.json();
+                    console.log(`users: ${responseData}`);
                     if (response.ok) {
-                        // console.log(`users: ${responseData.users}`);
                         users = responseData.users;
                         apiResponse = true;
                         return responseData;
                     }
                     else {
-                        // console.log(`Error: ${responseData.error || "An error occurred"}`);
+                        console.log(`Error: ${responseData.error || "An error occurred"}`);
                         apiResponse = false;
                     }
                 }
                 catch (error) {
-                    // console.log(`Network Error: ${error.message}`);
+                    console.log(`Network Error: ${error.message}`);
                     apiResponse = false;
                 }
             });
@@ -457,7 +460,7 @@ function handleChat() {
     chatBox.innerHTML = "";
     friendsList.forEach((element) => {
         element.addEventListener("click", function () {
-            let chat_id = Number(localStorage.getItem('opened_chat'));
+            let chat_id = Number(localStorage.getItem("opened_chat"));
             stopListeningToChat(chat_id);
             if (windowWidth < 600) {
                 chatBox.style.cssText = "display: flex;";
@@ -623,3 +626,17 @@ function viewMessages(messageKey, newMessageData) {
         chatDiv.scrollTop = chatDiv.scrollHeight;
     });
 }
+export {};
+// fetch(`http://${ipv4}:8000/api/chat/test/`, {
+// 	method: "POST",
+// 	headers: {
+// 		"Content-Type": "application/json",
+// 	},
+// 	body: JSON.stringify({
+// 		user_name: "test_user",
+// 		password: "test_password",
+// 	}),
+// 	credentials: "include", // Include cookies in the request
+// })
+// 	.then((response) => response.json())
+// 	.then((data) => console.log(data));

@@ -27,15 +27,9 @@ body {
   padding: 20px;
   background-color: #192a56;
   height: 50px;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
 .main_header h1 {
   text-align: center;
@@ -46,19 +40,12 @@ main {
   height: calc(100vh - 90px);
 }
 main > .container {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   height: calc(100vh - 90px);
 }
 main > .container > .left {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   width: 30%;
   height: 100%;
   background-color: #192a56;
@@ -66,16 +53,10 @@ main > .container > .left {
   border-right: 1px solid rgba(255, 255, 255, 0.431372549);
 }
 main > .container > .left header {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   padding: 20px;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
   background-color: #192a56;
   border-bottom: 1px solid rgba(43, 157, 255, 0.3490196078);
 }
@@ -88,16 +69,7 @@ main > .container > .left header input {
   background-color: #2148ab;
   color: white;
 }
-main > .container > .left header input::-webkit-input-placeholder {
-  color: white;
-}
 main > .container > .left header input::-moz-placeholder {
-  color: white;
-}
-main > .container > .left header input:-ms-input-placeholder {
-  color: white;
-}
-main > .container > .left header input::-ms-input-placeholder {
   color: white;
 }
 main > .container > .left header input::placeholder {
@@ -110,28 +82,18 @@ main > .container > .left header h2 {
   color: white;
 }
 main > .container > .left .friends {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   overflow: auto;
   height: calc(100vh - 156px);
 }
 main > .container > .left .friends .friend {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  align-items: center;
   gap: 15px;
   background-color: #193479;
   padding: 10px;
   cursor: pointer;
-  -webkit-transition: 0.1s;
   transition: 0.1s;
 }
 main > .container > .left .friends .friend:not(:last-of-type) {
@@ -161,13 +123,8 @@ main > .container > .left .friends .friends_list_error {
   margin-top: 50px;
 }
 main > .container > .right {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   width: 70%;
   height: 100%;
   position: relative;
@@ -175,25 +132,15 @@ main > .container > .right {
   border-top: 1px solid rgba(43, 157, 255, 0.3490196078);
 }
 main > .container > .right header {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  justify-content: space-between;
+  align-items: center;
   padding: 15px;
   background-color: #193479;
 }
 main > .container > .right header .left {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  align-items: center;
 }
 main > .container > .right header .left img {
   margin-right: 20px;
@@ -203,13 +150,8 @@ main > .container > .right header .left .cont h2 {
   color: wheat;
 }
 main > .container > .right .chat {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   padding: 20px;
   gap: 15px;
   overflow: auto;
@@ -218,9 +160,7 @@ main > .container > .right .chat {
 }
 main > .container > .right .chat .friend_message {
   position: relative;
-  -ms-flex-item-align: start;
-      align-self: flex-start;
-  width: -webkit-fit-content;
+  align-self: flex-start;
   width: -moz-fit-content;
   width: fit-content;
   padding: 10px;
@@ -233,16 +173,14 @@ main > .container > .right .chat .friend_message::after {
   position: absolute;
   top: 0;
   left: -13px;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  clip-path: polygon(0 0, 22% 13%, 22% 0);
+  -webkit-clip-path: polygon(0 0, 22% 13%, 22% 0);
+          clip-path: polygon(0 0, 22% 13%, 22% 0);
   width: 80px;
   height: 80px;
   background-color: #9193a5;
 }
 main > .container > .right .chat .friend_message .cont {
-  width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
   float: right;
@@ -252,9 +190,7 @@ main > .container > .right .chat .friend_message .cont h3 {
 }
 main > .container > .right .chat .my_message {
   position: relative;
-  -ms-flex-item-align: end;
-      align-self: flex-end;
-  width: -webkit-fit-content;
+  align-self: flex-end;
   width: -moz-fit-content;
   width: fit-content;
   padding: 10px;
@@ -267,16 +203,14 @@ main > .container > .right .chat .my_message::after {
   position: absolute;
   top: 0;
   right: -13px;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  clip-path: polygon(100% 0, 78% 13%, 78% 0);
+  -webkit-clip-path: polygon(100% 0, 78% 13%, 78% 0);
+          clip-path: polygon(100% 0, 78% 13%, 78% 0);
   width: 80px;
   height: 80px;
   background-color: #008b8b;
 }
 main > .container > .right .chat .my_message .cont {
-  width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
   float: left;
@@ -289,15 +223,9 @@ main > .container > .right .send_message form {
   width: 100%;
   background-color: #193479;
   width: inherit;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  justify-content: center;
+  align-items: center;
   padding: 20px 0;
   gap: 35px;
 }
@@ -310,16 +238,7 @@ main > .container > .right .send_message form input[type=text] {
   background-color: #2148ab;
   color: white;
 }
-main > .container > .right .send_message form input[type=text]::-webkit-input-placeholder {
-  color: white;
-}
 main > .container > .right .send_message form input[type=text]::-moz-placeholder {
-  color: white;
-}
-main > .container > .right .send_message form input[type=text]:-ms-input-placeholder {
-  color: white;
-}
-main > .container > .right .send_message form input[type=text]::-ms-input-placeholder {
   color: white;
 }
 main > .container > .right .send_message form input[type=text]::placeholder {
@@ -340,31 +259,15 @@ main > .container .before_login {
   width: 100%;
   height: calc(100% - 90px);
   background-color: #193479;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
 main > .container .before_login > .container {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  height: -webkit-fit-content;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   height: -moz-fit-content;
   height: fit-content;
   gap: 25px;
@@ -373,43 +276,26 @@ main > .container .before_login > .container {
   border-radius: 10px;
 }
 main > .container .before_login > .container .box {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   gap: 25px;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
 }
 main > .container .before_login > .container .box.register {
   display: none;
 }
 main > .container .before_login > .container .box form {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   gap: 25px;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
 }
 main > .container .before_login > .container .box form h1 {
   color: white;
 }
 main > .container .before_login > .container .box form .cont {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: stretch;
-      -ms-flex-align: stretch;
-          align-items: stretch;
+  align-items: stretch;
   gap: 5px;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   width: 300px;
 }
 main > .container .before_login > .container .box form .cont input, main > .container .before_login > .container .box form .cont select {
@@ -422,19 +308,7 @@ main > .container .before_login > .container .box form .cont input, main > .cont
   color: white;
   width: calc(100% - 15px);
 }
-main > .container .before_login > .container .box form .cont input::-webkit-input-placeholder, main > .container .before_login > .container .box form .cont select::-webkit-input-placeholder {
-  color: white;
-  font-size: 17px;
-}
 main > .container .before_login > .container .box form .cont input::-moz-placeholder, main > .container .before_login > .container .box form .cont select::-moz-placeholder {
-  color: white;
-  font-size: 17px;
-}
-main > .container .before_login > .container .box form .cont input:-ms-input-placeholder, main > .container .before_login > .container .box form .cont select:-ms-input-placeholder {
-  color: white;
-  font-size: 17px;
-}
-main > .container .before_login > .container .box form .cont input::-ms-input-placeholder, main > .container .before_login > .container .box form .cont select::-ms-input-placeholder {
   color: white;
   font-size: 17px;
 }
@@ -458,8 +332,7 @@ main > .container .before_login > .container .box form .cont .container img {
   width: 30px;
   height: 30px;
   position: absolute;
-  -webkit-transform: translate(0, -50%);
-          transform: translate(0, -50%);
+  transform: translate(0, -50%);
   right: 10px;
   top: 50%;
   cursor: pointer;
@@ -478,8 +351,7 @@ main > .container .before_login > .container button {
   border: navajowhite;
   padding: 10px;
   border-radius: 5px;
-  -ms-flex-item-align: start;
-      align-self: flex-start;
+  align-self: flex-start;
   background-color: #17d308;
   font-size: 20px;
   width: 100%;
@@ -487,7 +359,6 @@ main > .container .before_login > .container button {
 }
 main > .container .before_login > .container button.Register {
   background-color: rgba(240, 248, 255, 0.8196078431);
-  width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
 }
@@ -547,16 +418,7 @@ main > .container .logout {
     height: unset;
     padding: 13px 10px;
   }
-  main > .container .before_login > .container .box form .cont input::-webkit-input-placeholder, main > .container .before_login > .container .box form .cont select::-webkit-input-placeholder {
-    font-size: 15px;
-  }
   main > .container .before_login > .container .box form .cont input::-moz-placeholder, main > .container .before_login > .container .box form .cont select::-moz-placeholder {
-    font-size: 15px;
-  }
-  main > .container .before_login > .container .box form .cont input:-ms-input-placeholder, main > .container .before_login > .container .box form .cont select:-ms-input-placeholder {
-    font-size: 15px;
-  }
-  main > .container .before_login > .container .box form .cont input::-ms-input-placeholder, main > .container .before_login > .container .box form .cont select::-ms-input-placeholder {
     font-size: 15px;
   }
   main > .container .before_login > .container .box form .cont input::placeholder, main > .container .before_login > .container .box form .cont select::placeholder {
@@ -591,4 +453,4 @@ main > .container .logout {
     top: 10px;
     left: 14px;
   }
-}
+}/*# sourceMappingURL=main.css.map */

@@ -31,6 +31,20 @@ DEBUG = True
 
 # ALLOWED_HOSTS = []
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
+
 
 # Application definition
 
@@ -61,26 +75,30 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 ]
 
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.102']
 ALLOWED_HOSTS = ['*']
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:3000",
-    "http://127.0.0.1:5500",  # Your JavaScript file's live view URL
-    "http://localhost:5500",
-    'http://localhost:19006',
-    "http://192.168.1.102:8000",
-    "http://192.168.1.102:8000",
-    'http://192.168.1.102:19000',
+SESSION_COOKIE_SECURE = False  # False for development, True for production
 
-]
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://127.0.0.1:8000",
+#     "http://localhost:3000",
+#     "http://127.0.0.1:5500",  # Your JavaScript file's live view URL
+#     "http://localhost:5500",
+#     'http://localhost:19006',
+#     "http://192.168.1.102:8000",
+#     "http://192.168.1.102:8000",
+#     'http://192.168.1.102:19000',
+# ]
+CORS_ALLOWED_ORIGINS = ["http://*", "https://*"]  # Allow all origins for CSRF
+CORS_ORIGIN_WHITELIST = ['http://*', "https://*"]
 
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins (CORS)
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies)
+CSRF_TRUSTED_ORIGINS = ["http://*", "https://*"]  # Allow all origins for CSRF
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",
@@ -89,6 +107,15 @@ CORS_ALLOW_METHODS = [
     "DELETE",
     "OPTIONS",
 ]
+
+CSRF_COOKIE_NAME = "csrftoken"  # Default cookie name
+CSRF_COOKIE_SECURE = False  # Use True if you're using HTTPS
+CSRF_COOKIE_SAMESITE = 'Strict'  # Set to 'None' for cross-origin requests
+
+SESSION_COOKIE_NAME = 'sessionid'  # Default session cookie name
+SESSION_COOKIE_SECURE = False  # Set to True if you're using HTTPS
+SESSION_COOKIE_SAMESITE = 'Strict'  # Set to 'None' for cross-origin request
+
 
 ROOT_URLCONF = 'chat_backend.urls'
 
