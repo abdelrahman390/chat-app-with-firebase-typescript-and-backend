@@ -3,6 +3,11 @@ from datetime import datetime
 import secrets
 from chat_backend.settings import *
 db = firebase.database()
+import logging
+
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def generateToken():
@@ -16,10 +21,9 @@ def CheckForCredentials(userId, givenToken):
         return False
 
 
-def save_message(messageData):
+def save_message(messageData, token):
     try:
-        checkResult = CheckForCredentials(messageData["user"].get("userId"), messageData["user"].get("token"))
-        print('checkResult',checkResult )
+        checkResult = CheckForCredentials(messageData["user"].get("userId"), token)
         if checkResult :
             messageDataHandle = {
                 'date': messageData["message"]['date'],
@@ -27,29 +31,44 @@ def save_message(messageData):
                 "sender": messageData["message"]['sender'],
                 "receiver": messageData["message"]['receiver']
             }
-            messageTime = messageData["message"]['messageId']
-            db.child("chats").child(messageData["message"]['chatId']).child(messageTime).set(messageDataHandle)
+            timestamp = int(time.time() * 1000)
+            db.child("chats").child(messageData["message"]['chatId']).child(timestamp).set(messageDataHandle)
             # If successful, return confirmation
             return {"success": True, "message": "Message saved successfully!"}
         else :
-            return {"success": False,"error": 'unauthorized'}
+            return {"success": False, "error": 'unauthorized'}
     except Exception as e:
         # print(f"Error saving message: {str(e)}")
         return {"success": False, "error": str(e)}
 
-def get_opened_chat_message(chatId):
+def get_opened_chat_message(userId, chatId, token):
     try:
-        chat_messages = db.child("chats").child(chatId['chat_id']).get().val()
-        # If successful, return confirmation
-        if chat_messages != None :
-            # print('chat_messages', chat_messages)
-            # for user_id, user_data in chat_messages.items():
-            #     print("chat_messages", user_data)
-            return {"success": True, "message": chat_messages}
-        else:
-            return {"success": True, "message": {}}
+        checkResult = CheckForCredentials(userId, token)
+        if checkResult :
+            # logger.error(f'test Firebase pageS: {allUsers.keys()}')
+            # check if wanted chat is belongs to user
+            def checkForChatAuthority(allUsersLocal, senderId, chatId) :
+                for id in allUsersLocal:
+                    if id != senderId:
+                        chatIdTest = int(id[-2:]) + int(senderId[-2:])
+                        if int(chatIdTest) == int(chatId):
+                            return True
+
+            allUsers = db.child("users").get().val()
+            if checkForChatAuthority(allUsers, userId, chatId) :
+                chat_messages = db.child("chats").child(chatId).get().val()
+                # If successful, return confirmation
+                if chat_messages != None :
+                    return {"success": True, "message": chat_messages}
+                else:
+                    return {"success": True, "message": {}}
+            else : 
+                return {"success": False, "error": 'unauthorized chat'}
+        else :
+            return {"success": False, "error": 'unauthorized'}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logger.error(f'test Error: {str(e)}')
+        return {"success": False, "error": e}
 
 def users_login(messageData):
     try:
@@ -84,7 +103,7 @@ def users_signup(messageData):
         userCheck = db.child('users').order_by_child('user_name').equal_to(messageData['user_name']).get()
 
         # Check if the user exists
-        if userCheck.val() != []:
+        if userCheck.val() != [] :
             return {"response": "user_name_founded"}
         else:
             now = datetime.now()
@@ -103,9 +122,9 @@ def users_signup(messageData):
         # print(f"Error saving message: {str(e)}")
         return {"success": False, "error": str(e)}
 
-def get_fiendsList(requestData):
+def get_fiendsList(userId, token):
     try:
-        checkResult = CheckForCredentials(requestData['userId'], requestData['token'])
+        checkResult = CheckForCredentials(userId, token)
         if checkResult :
             # Direct Firebase interaction
             userCheck = db.child('users').get().val()
@@ -114,7 +133,7 @@ def get_fiendsList(requestData):
             if userCheck != []:
                 # get users which not equal to sender
                 for user_id, user_data in userCheck.items():
-                    if int(user_id) != int(requestData['userId']):
+                    if int(user_id) != int(userId):
                         users.append({"id": user_id, 'user_name': user_data['user_name']})
                 return {"success": True, "users": users }
             else:

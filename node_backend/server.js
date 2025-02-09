@@ -29,8 +29,10 @@ io.use((socket, next) => {
 		const usersSnapshot = await usersRef.once("value");
 		const storedToken = usersSnapshot.val();
 		if (storedToken === token) {
+			console.log("authorized");
 			return next(); // Credentials are valid, proceed
 		} else {
+			console.log("Not authorized");
 			return next(new Error("Invalid credentials")); // Invalid credentials
 		}
 	}
@@ -39,9 +41,12 @@ io.use((socket, next) => {
 
 let requiredChats = [];
 io.on("connection", (socket) => {
-	console.log(`User ${socket.id} connected`);
+	const authData = socket.handshake.auth;
+	let { token, userId } = authData;
+	console.log(`User ${socket.id} connected, ${userId}`);
 	const listenToChat = (chatId) => {
 		try {
+			console.log(`up $$ lessening to chat`, chatId);
 			const chatRef = db.ref(`chats/${chatId}`);
 			let isFirstMessage = true;
 			chatRef
@@ -58,7 +63,7 @@ io.on("connection", (socket) => {
 							return; // Do not emit this message
 						}
 
-						// console.log(`New message in chat ${chatId}:`, message);
+						console.log(`lessening to chat`, chatId);
 						io.to(chatId).emit("newMessage", { chatId, message }); // Emit new messages
 						// console.log("#########################");
 					} catch (err) {
@@ -107,6 +112,7 @@ io.on("connection", (socket) => {
 				const fetchAllChats = async () => {
 					for (const chatId of requiredChats) {
 						await getEveryChatData(chatId);
+						console.log(`User ${socket.id} joined chat room: ${chatId}`);
 						socket.join(chatId);
 						listenToChat(chatId);
 					}
@@ -126,6 +132,13 @@ io.on("connection", (socket) => {
 				error: err.message,
 			});
 		}
+	});
+
+	socket.on("subscribeToChat", (chatId) => {
+		console.log(`User ${socket.id} joined chat room: ${chatId}`);
+		socket.join(chatId); // Join the chat room
+		listenToChat(chatId);
+		requiredChats.push(chatId);
 	});
 
 	socket.on("disconnect", () => {

@@ -81,8 +81,6 @@ MIDDLEWARE = [
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.102']
 ALLOWED_HOSTS = ['*']
 
-SESSION_COOKIE_SECURE = False  # False for development, True for production
-
 # CORS_ALLOWED_ORIGINS = [
 #     "http://127.0.0.1:8000",
 #     "http://localhost:3000",
@@ -113,7 +111,7 @@ CSRF_COOKIE_SECURE = False  # Use True if you're using HTTPS
 CSRF_COOKIE_SAMESITE = 'Strict'  # Set to 'None' for cross-origin requests
 
 SESSION_COOKIE_NAME = 'sessionid'  # Default session cookie name
-SESSION_COOKIE_SECURE = False  # Set to True if you're using HTTPS
+SESSION_COOKIE_SECURE = None  # Set to True if you're using HTTPS
 SESSION_COOKIE_SAMESITE = 'Strict'  # Set to 'None' for cross-origin request
 
 

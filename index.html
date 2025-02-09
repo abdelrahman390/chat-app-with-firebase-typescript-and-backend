@@ -1,143 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="assets/style/main.css" />
+		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+		<title>Chat App</title>
+	</head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet"
-    href="assets/style/main.css" />
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <title>Chat App</title>
-</head>
+	<body>
+		<header class="main_header">
+			<h1>Chat App</h1>
+			<div class="account">
+				<img src="assets/imgs/user.png" alt="user-photo" />
+				<h2 class="userName"></h2>
+				<button class="logout">logout</button>
+			</div>
+		</header>
 
-<body>
-  <header class="main_header">
-    <h1>Chat App</h1>
-  </header>
+		<main>
+			<div class="container">
+				<div class="left">
+					<header>
+						<!-- <input placeholder="search..." type="text"> -->
+						<h2>Friends list</h2>
+					</header>
+					<div class="friends"> </div>
+				</div>
+				<div class="right"> </div>
+				<div class="before_login">
+					<div class="container">
+						<div class="box logIn">
+							<h1>Login</h1>
+							<form onsubmit="return false;">
+								<div class="cont">
+									<input
+										type="text"
+										name="user-name"
+										class="name"
+										placeholder="User name or phone number..."
+										required
+									/>
+									<div class="container">
+										<input
+											type="password"
+											name="password"
+											class="password"
+											placeholder="password ..."
+											required
+										/>
+										<img src="assets/imgs/hide.png" alt="hide" />
+									</div>
+									<div class="alarm">
+										<h3>User name or Password are incorrect</h3>
+									</div>
+								</div>
+								<button type="submit" class="login_button">Login</button>
+							</form>
+						</div>
 
-  <main>
-    <div class="container">
-      <div class="left">
-        <header>
-          <!-- <input placeholder="search..." type="text"> -->
-          <h2>Friends list</h2>
-        </header>
-        <div class="friends"> </div>
-      </div>
-      <div class="right"> </div>
-      <div class="before_login">
-        <div class="container">
-          <div class="box logIn">
-            <h1>Login</h1>
-            <form onsubmit="return false;">
-              <div class="cont">
-                <input type="text"
-                  name="user-name"
-                  class="name"
-                  placeholder="User name or phone number..."
-                  required />
-                <div class="container">
-                  <input type="password"
-                    name="password"
-                    class="password"
-                    placeholder="password ..."
-                    required />
-                  <img src="assets/imgs/hide.png"
-                    alt="hide" />
-                </div>
-                <div class="alarm">
-                  <h3>User name or Password are incorrect</h3>
-                </div>
-              </div>
-              <button type="submit"
-                class="login_button">Login</button>
-            </form>
-          </div>
+						<div class="box register">
+							<h1>Register</h1>
+							<form onsubmit="return false;">
+								<div class="cont">
+									<input
+										type="text"
+										name="user-name"
+										class="name"
+										placeholder="User name or phone number..."
+										required
+									/>
+									<div class="alarm userName">
+										<h3>User Name Already Taken</h3>
+									</div>
+									<div class="container">
+										<input
+											type="password"
+											name="password"
+											minlength="3"
+											class="password"
+											placeholder="password ..."
+											required
+										/>
+										<img src="assets/imgs/hide.png" alt="hide" />
+									</div>
+									<div class="container">
+										<input
+											type="password"
+											name="confirm-password"
+											minlength="3"
+											class="confirm_password"
+											placeholder="confirm password ..."
+											required
+										/>
+										<img src="assets/imgs/hide.png" alt="hide" />
+									</div>
+									<div class="alarm password">
+										<h3>Password not match</h3>
+									</div>
+									<select name="gender" class="gender" required>
+										<option value="" disabled="" selected="" hidden=""
+											>gender</option
+										>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+									</select>
+								</div>
+								<button type="submit" class="register_button">Signup</button>
+							</form>
+						</div>
+						<button class="Register">Register</button>
+					</div>
+				</div>
+			</div>
+		</main>
 
-          <div class="box register">
-            <h1>Register</h1>
-            <form onsubmit="return false;">
-              <div class="cont">
-                <input type="text"
-                  name="user-name"
-                  class="name"
-                  placeholder="User name or phone number..."
-                  required />
-                <div class="alarm userName">
-                  <h3>User Name Already Taken</h3>
-                </div>
-                <div class="container">
-                  <input type="password"
-                    name="password"
-                    minlength="3"
-                    class="password"
-                    placeholder="password ..."
-                    required />
-                  <img src="assets/imgs/hide.png"
-                    alt="hide" />
-                </div>
-                <div class="container">
-                  <input type="password"
-                    name="confirm-password"
-                    minlength="3"
-                    class="confirm_password"
-                    placeholder="confirm password ..."
-                    required />
-                  <img src="assets/imgs/hide.png"
-                    alt="hide" />
-                </div>
-                <div class="alarm password">
-                  <h3>Password not match</h3>
-                </div>
-                <select name="gender"
-                  class="gender"
-                  required>
-                  <option value=""
-                    disabled=""
-                    selected=""
-                    hidden="">gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              <button type="submit"
-                class="register_button">Signup</button>
-            </form>
-          </div>
-          <button class="Register">Register</button>
-        </div>
-      </div>
-      <!-- <div class="account"> -->
-      <button class="logout">logout</button>
-      <!-- <h2 class="userName"></h2> -->
-      <!-- </div> -->
-    </div>
-  </main>
-
-  <script src="assets/javascript/main.js"
-    type="module"></script>
-  <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
-
-  <script>
-    //   const socket = io("http://localhost:3002"); // URL must match the server's URL
-
-    //   socket.on("connect", () => {
-    //     console.log("Connected to server with ID:", socket.id);
-    //   });
-
-    //   socket.on("newMessage", (message) => {
-    //     console.log("New message received:", message);
-    //   });
-
-    //   socket.on("connect_error", (error) => {
-    //     console.error("Connection failed:", error);
-    //   });
-
-    //   socket.on("disconnect", () => {
-    //     console.log("Disconnected from server");
-    //   });
-  </script>
-</body>
-
+		<script src="assets/javascript/main.js" type="module"></script>
+	</body>
 </html>

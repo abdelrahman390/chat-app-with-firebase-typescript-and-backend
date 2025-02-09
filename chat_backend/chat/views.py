@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from django.middleware.csrf import get_token
 from django.http import HttpResponse
 import logging
+from datetime import datetime, timedelta
+from rest_framework.serializers import Serializer, CharField, ChoiceField
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -18,12 +20,18 @@ logger = logging.getLogger(__name__)
 class GetMessageFromUser(APIView):
     def post(self, request, *args, **kwargs):
 
-        # if 'userId' not in request.data["user"] or 'token' not in request.data["user"] :
-        #     return Response({"error": "Missing 'userId' or 'token'"}, status=400)
-        if 'userId' not in request.data.get("user", {}) or 'token' not in request.data.get("user", {}):
-            return Response({"error": "Missing 'userId' or 'token'"}, status=400)
+        # logger.error(f'GetMessageFromUser: {len(auth_header)} ')
+        auth_header = request.headers.get('Authorization')
+        user_data = request.data.get("user", {})
+        if not auth_header or not auth_header.startswith('Bearer ') or len(auth_header) != 39 or 'userId' not in user_data:
+            return Response({"error": "User-id or Authorization token is missing or invalid."}, status=401)
+        
+        message_data = request.data.get("message", {})
+        if 'sender' not in message_data or 'receiver' not in message_data or 'msg' not in message_data or 'date' not in message_data or 'chatId' not in message_data:
+            return Response({"error": "Missing required message data fields."}, status=400)
+
         try:
-            result = save_message(request.data)
+            result = save_message(request.data, auth_header[len('Bearer '):])
             if result["success"]:
                 return JsonResponse({"message": result["message"]}, status=200)
             elif result["error"] == 'unauthorized': 
@@ -33,115 +41,101 @@ class GetMessageFromUser(APIView):
         except Exception as e:
             return Response({"error": str(e), "test": result }, status=500)
 
+# backend validation Done
 class OpenedChatMessages(APIView):
-    def post(self, request):
-        if 'chat_id' not in request.data :
-            print(request.data)
-            return Response({"error": "Missing 'chat_id'"}, status=400)
+    logger.error('START ############################')
+    def get(self, request):
+        userId = request.GET.get('userId')
+        chatId = request.GET.get('chatId')
+        auth_header = request.headers.get('Authorization')
+        # logger.error(f'auth_token: {auth_header} len: {len(auth_header)} user-id {userId} chat id {chatId}')
+
+        if not userId or not chatId or not auth_header or len(auth_header) != 32 :
+            return Response({"error": "Missing 'userId', 'chatId', or invalid 'Authorization' token."}, status=400)
+        
         try:
             # get_opened_chat_message(request.data)
-            result = get_opened_chat_message(request.data)
+            result = get_opened_chat_message(userId, chatId, auth_header)
             if result["success"]:
+                logger.error('END ############################')
                 return JsonResponse({"chat": result["message"]}, status=200)
             else:
-                return JsonResponse({"error": result["error"]}, status=400)
+                logger.error(f'error: {result.get("error", "Unknown error")}')
+                return JsonResponse({"error": result.get("error", "Unknown error")}, status=400)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+# backend validation Done
 class UsersLogin(APIView):
     def post(self, request):
-        # print("Request Data from login:", request.data)  # Debugging line
-        if 'user_name' not in request.data or "password" not in request.data:
-            return Response({"error": "Missing 'user_name' or 'password'"}, status=400)
+        class LoginSerializer(Serializer):
+            user_name = CharField(min_length=3, required=True)
+            password = CharField(min_length=1, required=True)
+
+        # Ensure that coming data from front-end is valid
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"error": serializer.errors}, status=400)
+
         try:
             result = users_login(request.data)
             if result["success"]:
-                # print("result tets", request.data["Platform"], "web" == request.data["Platform"])
-                if "web" == request.data["Platform"]:
-                    logger.error(f"auth_token {result["token"]}" ) # this log correct token
-                    response = Response({"Found": "true", "userId": result["user_id"]}, status=200)
-                    # response.set_cookie(
-                    #     key="auth_token",
-                    #     value = f"{result["token"]}",
-                    #     httponly=False,  # Make it False temporarily to access via JS for debugging
-                    #     secure=False,    # False for local dev
-                    #     samesite="Strict"
-                    # )
-                    # Set cookie properly (pass a string value, not a set)
-                    response.set_cookie(
-                        'auth_token',
-                        result['token'],  # token should be a string
-                        httponly=True,  # For security, make it httponly
-                        secure=False,   # Set to True for HTTPS, False for local dev
-                        samesite="none"  # Use "None" for cross-origin
-                    )
-
-                    # Log the response headers to ensure cookie is being set
-                    logger.error(f"Response headers: {response.headers}") # didn`t log cookie
-                    logger.error(f"Response items: {response.items()}")  # Log the full response headers
-                    return response
-                else :
-                    return Response({"Found": "true", "userId": result["user_id"], "token": result["token"]}, status=200)
+                response = Response({"Found": "true", "userId": result["user_id"], "token": result["token"]}, status=200)
+                response.set_cookie(
+                    key="auth_token",
+                    value="test_token",
+                    httponly=True,        # Prevents JavaScript access
+                    secure=False,         # Set to True in production
+                    samesite="None"
+                )
+                return response
+                # return Response({"Found": "true", "userId": result["user_id"], "token": result["token"]}, status=200)
             else:
                 # print("error")
                 return Response({"Found": "false"}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+# backend validation Done
 class Signup(APIView):
-
     def post(self, request):
-        print("Request data:", request.data)
-
-        if 'user_name' not in request.data :
-            return Response({"error": "Missing 'user_name' "}, status=400)
+        class LoginSerializer(Serializer):
+            user_name = CharField(min_length=3, required=True)
+            password = CharField(min_length=1, required=True)
+            gender = ChoiceField(choices=["male", "Male", "female", "Female"], required=True)
+            
+        # Ensure that coming data from front-end is valid
+        serializer = LoginSerializer(data=request.data)
+        # logger.error(f'{request.data} - {not len(request.data["user_name"]) >= 2} - {not len(request.data["password"]) >= 3}')
+        if not serializer.is_valid():
+            return Response({"error": serializer.errors}, status=400)
 
         try:
             result = users_signup(request.data)
-            print("result", result)
-            # if result :
-            #     return Response({"response": result}, status=200)
-            # else:
-            #     return Response({"response": result}, status=400)
-            return JsonResponse(result, status=200)
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
-
-class getFriendsList(APIView):
-    def post(self, request):
-
-        auth_token = request.COOKIES.get("csrftoken")  # Extract token from cookies
-        logger.error(f'auth_token: {auth_token}')
-
-        # if not auth_token:
-        #     return JsonResponse({"error": "Unauthorized"}, status=401)
-        
-        if 'userId' not in request.data or 'token' not in request.data :
-            logger.error("$$$$$$ Missing 'userId' or 'token'" )
-            return Response({"error": "Missing 'userId' or 'token'"}, status=400)
-
-        # print("auth_token", auth_token)
-        try:
-            # result = get_fiendsList(request.data)
+            if result["response"] == "done":
+                return Response(result, status=200)
+            else:
+                return Response(result, status=400)
             # return JsonResponse(result, status=200)
-
-            return JsonResponse(request.data, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+# backend validation Done
+class getFriendsList(APIView):
+    def get(self, request):
+        user_id = request.GET.get('userId')
+        auth_header = request.headers.get('Authorization')
+        # logger.error(f'auth_token: {auth_header} user id {user_id}')
 
-# class TestLoginView(APIView):
-#     def post(self, request):
-#         response = HttpResponse("Cookie Set!")
-#         response.set_cookie(
-#             key="auth_token",
-#             value="test_token",  # You should pass a real token here
-#             secure=False,         # Set to False for local development
-#             samesite='none',      # Required for cross-origin requests
-#             httponly=False,        # Optional for security
-#             expires=2000   
-#         )
+        if not user_id or not auth_header or len(auth_header) != 32:
+            # logger.error("$$$$$$ Missing 'userId' or 'token'")
+            return Response({"error": "Missing 'userId', 'chatId', or invalid 'Authorization' token."}, status=400)
 
-#         logger.error(f"Response headers: {response.headers}") # didn`t log cookie
-#         logger.error(f"Response items: {response.items()}")  # Log the full response headers
-#         return response
+        try:
+            result = get_fiendsList(user_id, auth_header)
+            return JsonResponse(result, status=200)
+
+            # return JsonResponse(request.data, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+

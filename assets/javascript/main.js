@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // variables
 let msgTxt = document.querySelector("main .container > .right .send_message input"), sendButton = document.querySelector("main .container > .right .send_message img"), sender = localStorage.getItem("sender"), ChangeLoginPageButton = document.querySelector(".container > .Register") ||
-    document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), logoutButton = document.querySelector("main .container .logout") ||
-    document.querySelector("main .container .logout"), windowWidth = window.innerWidth, ipv4 = "192.168.1.102";
+    document.querySelector(".container > .Register"), registerLogin = document.querySelector(".logIn form"), registerForm = document.querySelector(".register form"), user = localStorage.getItem("sender"), allUsers = [], allMessages = [], allowed = false, loginInput = document.querySelectorAll("main .container .before_login .container .box .cont input"), friendsList = document.querySelector("main .container > .left .friends"), account = document.querySelector("header .account"), windowWidth = window.innerWidth, 
+// ipv4: string = "192.168.1.102";
+ipv4 = "127.0.0.1";
 if (localStorage.getItem("sender") !== null) {
     sender = localStorage.getItem("sender");
 }
@@ -27,6 +29,8 @@ function sendMsg(chatId, message, receiver) {
         // API URL
         const apiUrl = `http://${ipv4}:8000/api/chat/save-message/`;
         let sender = localStorage.getItem("sender");
+        let userId = localStorage.getItem("sender_id");
+        let token = localStorage.getItem("token");
         var BigDate = new Date();
         var date = BigDate.toLocaleString();
         var timestamp = new Date().getTime();
@@ -36,23 +40,29 @@ function sendMsg(chatId, message, receiver) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    sender: sender,
-                    msg: message,
-                    receiver: receiver,
-                    date: date,
-                    messageTime: timestamp,
-                    chatId: chatId,
+                    message: {
+                        sender: sender,
+                        msg: message,
+                        receiver: receiver,
+                        date: date,
+                        messageId: timestamp,
+                        chatId: chatId,
+                    },
+                    user: {
+                        userId: userId,
+                    },
                 }),
             });
             // Handle response
             const responseData = yield response.json();
             if (response.ok) {
-                // console.log(`Success: ${responseData.message}`);
+                console.log(`Success: ${responseData.message}`);
             }
             else {
-                // console.log(`Error: ${responseData.error || "An error occurred"}`);
+                console.log(`Error: ${responseData.error || "An error occurred"}`);
             }
         }
         catch (error) {
@@ -63,22 +73,24 @@ function sendMsg(chatId, message, receiver) {
 // Send message Django api
 function getOpenChatMessageApi(chatId) {
     return __awaiter(this, void 0, void 0, function* () {
+        let userId = localStorage.getItem("sender_id");
+        let token = localStorage.getItem("token");
         // API URL
-        const apiUrl = `http://${ipv4}:8000/api/chat/OpenedChatMessages/`;
+        // console.log(userId);
+        const apiUrl = `http://${ipv4}:8000/api/chat/OpenedChatMessages/?chatId=${chatId}&userId=${userId}`;
         try {
             const response = yield fetch(apiUrl, {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `${token}`,
                 },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                }),
             });
             // Handle response
             const responseData = yield response.json();
             if (response.ok) {
                 // console.log("Success", responseData.chat);
+                viewMessages(null, responseData.chat);
                 return responseData.chat;
             }
             else {
@@ -90,41 +102,83 @@ function getOpenChatMessageApi(chatId) {
         }
     });
 }
-const socket = io(`http://${ipv4}:3002`);
-function getNewOpenChatMessages(chatId) {
-    console.log("Attempting to listen for messages on chat:", chatId);
-    // Ensure the socket is connected before subscribing
-    if (socket.connected) {
-        setupListeners(chatId);
-    }
-    else {
-        socket.once("connect", () => {
-            console.log("Connected to server with ID:", socket.id);
-            setupListeners(chatId);
-        });
-    }
-    // Handle disconnection
-    socket.once("disconnect", () => {
-        console.log("Disconnected from server");
+let userId = localStorage.getItem("sender_id");
+let token = localStorage.getItem("token");
+let socket = io(`http://${ipv4}:3002`, {
+    reconnectionAttempts: 3, // Retry 10 times if the connection fails
+    timeout: 30000, // Wait 30 seconds for a connection
+    transports: ["websocket", "polling"],
+    auth: {
+        token: token,
+        userId: userId,
+    },
+});
+console.log("Connecting to Socket.IO...");
+socket.on("connect", () => {
+    console.log("Connected to server with ID:", socket.id);
+    socket.on("newMessage", (data) => {
+        console.log("New message:", data);
     });
-}
+});
+socket.on("connect_error", (error) => {
+    console.log("server can`t connect", error);
+});
+// Handle disconnection
+socket.on("disconnect", () => {
+    console.log("Disconnected from server");
+});
+// // handle this function
+// const unsubscribeFromChat = (chatId: any) => {
+// 	console.log(`Unsubscribing from chat: ${chatId}`);
+// 	socket.emit("unsubscribeFromChat", chatId);
+// };
 function setupListeners(chatId) {
     // Unsubscribe from previous chat to avoid duplication
     socket.emit("unsubscribeFromChat", chatId.toString());
-    console.log(`Subscribed to chat: ${chatId}`);
     // Subscribe to the new chat
     socket.emit("subscribeToChat", chatId.toString());
+    console.log(`Subscribed to chat: ${chatId}`);
     // Remove previous listeners to avoid duplication
     socket.off("newMessage");
     socket.on("newMessage", (data) => {
-        console.log("New message received:", data);
-        viewMessages(data.id, data.Data); // Call your message handling function
+        console.log("New message received:", data, data.message);
+        viewMessages(data.message, null); // Call your message handling function
     });
 }
-function stopListeningToChat(chatId) {
-    console.log(`Unsubscribing from chat: ${chatId}`);
-    socket.emit("unsubscribeFromChat", chatId.toString());
+// function stopListeningToChat(chatId: number) {
+// 	console.log(`Unsubscribing from chat: ${chatId}`);
+// 	socket.emit("unsubscribeFromChat", chatId.toString());
+// }
+/********************* login and register page and logout handle *********************/
+//  check if loggedIn
+function checkIfLogged(check) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let before_login = document.querySelector(".before_login");
+        // if not logged in
+        if (String(check) == "null" || String(check) == "false") {
+            console.log("not login");
+            localStorage.setItem("loggedIn", String(false));
+            before_login.style.cssText = "display: flex";
+            account.querySelector(".main_header .account .userName").innerHTML = "";
+            account.style.display = "none";
+            loginAndRegister();
+            // if logged in
+        }
+        else if (String(check) == "true" || String(check) != "null") {
+            console.log("login");
+            localStorage.setItem("loggedIn", String(true));
+            sender = localStorage.getItem("sender");
+            before_login.style.cssText = "display: none";
+            const userNameElement = account.querySelector(".main_header .account .userName");
+            if (userNameElement && sender) {
+                userNameElement.innerHTML = sender;
+            }
+            account.style.display = "flex";
+            yield handleFriendsList();
+        }
+    });
 }
+checkIfLogged(sender);
 // Login handle
 function loginHandle(user_name, password) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -139,9 +193,9 @@ function loginHandle(user_name, password) {
                 body: JSON.stringify({
                     user_name: user_name,
                     password: password,
-                    Platform: "web",
+                    platform: "web",
                 }),
-                credentials: "include",
+                // credentials: "include",
             });
             // Handle response
             const responseData = yield response.json();
@@ -161,7 +215,7 @@ function loginHandle(user_name, password) {
     });
 }
 // Login handle
-function registerHandle(user_name, password) {
+function registerHandle(user_name, password, gender) {
     return __awaiter(this, void 0, void 0, function* () {
         // API URL
         const apiUrl = `http://${ipv4}:8000/api/chat/Signup/`;
@@ -174,6 +228,7 @@ function registerHandle(user_name, password) {
                 body: JSON.stringify({
                     user_name: user_name,
                     password: password,
+                    gender: gender,
                     Platform: "web",
                 }),
             });
@@ -193,34 +248,6 @@ function registerHandle(user_name, password) {
         }
     });
 }
-/********************* login and register page and logout handle *********************/
-//  check if loggedIn
-function checkIfLogged(check) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let before_login = document.querySelector(".before_login");
-        // if not logged in
-        if (String(check) == "null" || String(check) == "false") {
-            console.log("not login");
-            localStorage.setItem("loggedIn", String(false));
-            before_login.style.cssText = "display: flex";
-            logoutButton.style.display = "none";
-            loginAndRegister();
-            // if logged in
-        }
-        else if (String(check) == "true" || String(check) != "null") {
-            console.log("login");
-            localStorage.setItem("loggedIn", String(true));
-            sender = localStorage.getItem("sender");
-            before_login.style.cssText = "display: none";
-            logoutButton.style.display = "unset";
-            yield handleFriendsList();
-            // handleChat();
-            // getChatsMessages();
-            // CHeckIfAnyChangesInChatsListener();
-        }
-    });
-}
-checkIfLogged(sender);
 // login and register handle
 // Define types for the input elements and other elements you are interacting with
 function loginAndRegister() {
@@ -253,6 +280,7 @@ function loginAndRegister() {
             let userName = registerCard.querySelector(".container .before_login .container .box .cont  .name");
             let password = registerCard.querySelector(".container .before_login .container .box .cont  .password");
             let registerButton = document.querySelector("main .container .before_login .container .box  .register_button");
+            let gender = document.querySelector("main .container .before_login .container .box  .gender");
             let confirmPassword = document.querySelector(".container .before_login .container .box .cont  .confirm_password");
             let registrationPasswordAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.password");
             let registrationUserNameAlarm = document.querySelector(".container .before_login .container .box.register .cont .alarm.userName");
@@ -275,13 +303,13 @@ function loginAndRegister() {
             // send new user
             registerButton.addEventListener("click", function () {
                 return __awaiter(this, void 0, void 0, function* () {
-                    let allCheck = userName.value.length > 2 &&
-                        passwordCheck &&
-                        registerForm.checkValidity(); // return boolean
+                    let allCheck = 
+                    // userName.value.length >= 2 &&
+                    passwordCheck && gender.value && registerForm.checkValidity(); // return boolean
                     // let key: number | string;
                     try {
                         if (allCheck) {
-                            let result = yield registerHandle(userName.value, password.value);
+                            let result = yield registerHandle(userName.value, password.value, gender.value);
                             console.log("result", result);
                             if (result.response == "user_name_founded") {
                                 registrationUserNameAlarm.classList.add("open");
@@ -291,7 +319,8 @@ function loginAndRegister() {
                                 // handleNewUser();
                                 localStorage.setItem("loggedIn", "true");
                                 localStorage.setItem("sender", userName.value);
-                                localStorage.setItem("sender_id", result.key);
+                                localStorage.setItem("sender_id", result.userId);
+                                localStorage.setItem("token", result.token);
                                 checkIfLogged("true");
                                 userName.value = "";
                                 password.value = "";
@@ -322,13 +351,14 @@ function loginAndRegister() {
                             // Await the result of the loginHandle function
                             let result = yield loginHandle(userNameInput.value, passwordInput.value);
                             if (result.Found == "true") {
-                                // loginAlarm.classList.remove("open");
-                                // localStorage.setItem("loggedIn", "true");
-                                // localStorage.setItem("sender", userNameInput.value);
-                                // localStorage.setItem("sender_id", result.user_id);
-                                // checkIfLogged("true");
-                                // userNameInput.value = "";
-                                // passwordInput.value = "";
+                                loginAlarm.classList.remove("open");
+                                localStorage.setItem("loggedIn", "true");
+                                localStorage.setItem("sender", userNameInput.value);
+                                localStorage.setItem("sender_id", result.userId);
+                                localStorage.setItem("token", result.token);
+                                checkIfLogged("true");
+                                userNameInput.value = "";
+                                passwordInput.value = "";
                             }
                             else {
                                 loginAlarm.classList.add("open");
@@ -363,91 +393,89 @@ ChangeLoginPageButton.addEventListener("click", function () {
     }
 });
 // logout button handle
-logoutButton.addEventListener("click", function () {
+account
+    .querySelector(".main_header .account .logout")
+    .addEventListener("click", function () {
     localStorage.setItem("loggedIn", "false");
     localStorage.setItem("sender", "null");
     localStorage.setItem("sender_id", "null");
     localStorage.setItem("receiver", "null");
     localStorage.setItem("opened_chat", "null");
+    localStorage.setItem("addedFriends", "null");
+    localStorage.removeItem("token");
     checkIfLogged("false");
+    account.querySelector(".main_header .account .userName").innerHTML = "";
 });
-/********************* login and register page handle *********************/
+/********************* login and register page and logout handle *********************/
 /********************* handle friends list *********************/
 function handleFriendsList() {
     return __awaiter(this, void 0, void 0, function* () {
-        sender = localStorage.getItem("sender");
-        let users;
-        let apiResponse;
-        function GetAllUsers(sender) {
+        let userId = localStorage.getItem("sender_id");
+        let token = localStorage.getItem("token");
+        function GetAllUsers() {
             return __awaiter(this, void 0, void 0, function* () {
-                // API URL
-                console.log(`ipv4: ${ipv4}`);
-                const apiUrl = `http://${ipv4}:8000/api/chat/getFriendsList/`;
+                // console.log(userId, token);
+                const apiUrl = `http://${ipv4}:8000/api/chat/getFriendsList/?userId=${userId}`;
                 try {
-                    // const csrfData = await apiUrl.json();
-                    // const csrfToken = csrfData.csrfToken;
                     const response = yield fetch(apiUrl, {
-                        method: "POST",
+                        method: "GET",
                         headers: {
                             "Content-Type": "application/json",
-                            // "X-CSRFToken": csrfToken,
+                            Authorization: `${token}`,
                         },
-                        credentials: "include",
-                        body: JSON.stringify({
-                            sender: sender,
-                        }),
+                        // credentials: "include",
                     });
                     // Handle response
                     const responseData = yield response.json();
-                    console.log(`users: ${responseData}`);
+                    console.log(`users: ${JSON.stringify(responseData)}`);
                     if (response.ok) {
-                        users = responseData.users;
-                        apiResponse = true;
+                        putFriendsToPage(responseData.users);
+                        localStorage.setItem("addedFriends", JSON.stringify(responseData.users));
                         return responseData;
                     }
                     else {
                         console.log(`Error: ${responseData.error || "An error occurred"}`);
-                        apiResponse = false;
+                        putFriendsToPage(false);
                     }
                 }
                 catch (error) {
                     console.log(`Network Error: ${error.message}`);
-                    apiResponse = false;
+                    putFriendsToPage(false);
                 }
             });
         }
-        yield GetAllUsers(sender);
-        let friendsList = document.querySelector("main .container > .left .friends");
-        // console.log(apiResponse)
-        if (apiResponse) {
-            friendsList.innerHTML = "";
-            for (const key in users) {
-                let friend = document.createElement("div");
-                friend.className = "friend";
-                friend.setAttribute("id", key);
-                let userPhoto = document.createElement("img");
-                userPhoto.className = "user_photo";
-                userPhoto.src = "assets/imgs/user.png";
-                let cont = document.createElement("div");
-                cont.className = "cont";
-                let h1 = document.createElement("h1");
-                h1.className = "name";
-                h1.innerHTML = users[key].user_name;
-                // let h2 = document.createElement("h2")
-                // h2.classList = "last-message"
-                cont.appendChild(h1);
-                friend.appendChild(userPhoto);
-                friend.appendChild(cont);
-                friendsList.appendChild(friend);
+        yield GetAllUsers();
+        function putFriendsToPage(users) {
+            let friendsList = document.querySelector("main .container > .left .friends");
+            if (users) {
+                friendsList.innerHTML = "";
+                for (const chat of users) {
+                    let friend = document.createElement("div");
+                    friend.className = "friend";
+                    friend.setAttribute("id", chat.id);
+                    let userPhoto = document.createElement("img");
+                    userPhoto.className = "user_photo";
+                    userPhoto.src = "assets/imgs/user.png";
+                    let cont = document.createElement("div");
+                    cont.className = "cont";
+                    let h1 = document.createElement("h1");
+                    h1.className = "name";
+                    h1.innerHTML = chat.user_name;
+                    // let h2 = document.createElement("h2")
+                    // h2.classList = "last-message"
+                    cont.appendChild(h1);
+                    friend.appendChild(userPhoto);
+                    friend.appendChild(cont);
+                    friendsList.appendChild(friend);
+                }
+            }
+            else {
+                let errorH1 = document.createElement("h1");
+                errorH1.classList.add("friends_list_error");
+                errorH1.innerText = "Server Error";
+                friendsList.appendChild(errorH1);
             }
         }
-        else {
-            let errorH1 = document.createElement("h1");
-            errorH1.classList.add("friends_list_error");
-            errorH1.innerText = "Server Error";
-            friendsList.appendChild(errorH1);
-        }
-        localStorage.setItem("addedFriends", JSON.stringify(users));
         handleChat();
     });
 }
@@ -461,7 +489,7 @@ function handleChat() {
     friendsList.forEach((element) => {
         element.addEventListener("click", function () {
             let chat_id = Number(localStorage.getItem("opened_chat"));
-            stopListeningToChat(chat_id);
+            // stopListeningToChat(chat_id);
             if (windowWidth < 600) {
                 chatBox.style.cssText = "display: flex;";
                 element.parentElement.parentElement.style.cssText = "display: none;";
@@ -471,6 +499,7 @@ function handleChat() {
             const senderId = localStorage.getItem("sender_id");
             const receiverLastFourNums = receiverId.slice(-2);
             const senderLastFourNums = senderId.slice(-2);
+            console.log(receiverId, senderId);
             const chatId = +receiverLastFourNums + +senderLastFourNums;
             localStorage.setItem("opened_chat", chatId.toString());
             localStorage.setItem("receiver", receiverName.innerHTML);
@@ -526,7 +555,10 @@ function handleChat() {
             chatBox.appendChild(sendMessageDiv);
             allowed = true;
             sendMessage();
-            getNewOpenChatMessages(chatId);
+            // getNewOpenChatMessages(chatId);
+            setupListeners(chatId);
+            // console.log("calling getOpenChatMessageApi()", chatId);
+            getOpenChatMessageApi(chatId);
             if (width <= 600) {
                 // handle close chat
                 let exitButton = document.querySelector("main > .container > .right header .right img");
@@ -564,8 +596,9 @@ function handleChat() {
     }
 }
 // handle view messages
-function viewMessages(messageKey, newMessageData) {
+function viewMessages(newMessageData, messagesData) {
     return __awaiter(this, void 0, void 0, function* () {
+        // console.log("up #####", newMessageData, messagesData);
         let sender = localStorage.getItem("sender");
         let receiver = localStorage.getItem("receiver");
         let rightDiv = document.querySelector("main .container > .right");
@@ -574,69 +607,63 @@ function viewMessages(messageKey, newMessageData) {
             chatDiv = document.createElement("div");
             chatDiv.className = "chat";
         }
-        if (newMessageData && typeof newMessageData === "object") {
-            let key = messageKey;
-            let dateObj = new Date(+key);
-            let options = {
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-            };
-            let formattedDate = dateObj.toLocaleString("en-US", options);
+        if (messagesData != null) {
+            for (const [key, data] of Object.entries(messagesData)) {
+                putMessagesInThePage(data);
+            }
+        }
+        else {
+            // console.log("new-message", newMessageData);
+            putMessagesInThePage(newMessageData);
+        }
+        function putMessagesInThePage(
+        // messageKey: number,
+        messageData) {
+            // console.log("new-message", messageData);
+            // let dateObj = new Date(+messageKey);
+            // let options: Intl.DateTimeFormatOptions = {
+            // 	hour: "numeric",
+            // 	minute: "numeric",
+            // 	hour12: true,
+            // };
+            // let formattedDate = dateObj.toLocaleString("en-US", options);
             // console.log(chatDiv)
-            if (newMessageData.receiver === sender) {
+            if (messageData.receiver === sender) {
                 const friendMessageDiv = document.createElement("div");
                 friendMessageDiv.className = "friend_message";
                 const friendCont = document.createElement("div");
                 friendCont.className = "cont";
                 const friendContent = document.createElement("h3");
                 friendContent.className = "content";
-                friendContent.textContent = newMessageData.msg;
+                friendContent.textContent = messageData.msg;
                 const friendDate = document.createElement("h4");
                 friendDate.className = "date";
-                friendDate.innerText = formattedDate;
+                friendDate.innerText = messageData.date;
                 friendCont.appendChild(friendContent);
                 friendCont.appendChild(friendDate);
                 friendMessageDiv.appendChild(friendCont);
                 chatDiv.appendChild(friendMessageDiv);
             }
-            if (sender === newMessageData.sender) {
+            if (sender === messageData.sender) {
                 const myMessageDiv = document.createElement("div");
                 myMessageDiv.className = "my_message";
                 const myCont = document.createElement("div");
                 myCont.className = "cont";
                 const myContent = document.createElement("h3");
                 myContent.className = "content";
-                myContent.textContent = newMessageData.msg;
+                myContent.textContent = messageData.msg;
                 const myDate = document.createElement("h4");
                 myDate.className = "date";
-                myDate.textContent = formattedDate;
+                myDate.textContent = messageData.date;
                 myCont.appendChild(myContent);
                 myCont.appendChild(myDate);
                 myMessageDiv.appendChild(myCont);
                 chatDiv.appendChild(myMessageDiv);
             }
-            if (rightDiv.children.length == 2) {
-                rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
-            }
         }
-        else {
-            console.error("Failed to fetch or process chat messages.");
+        if (rightDiv.children.length == 2) {
+            rightDiv.insertBefore(chatDiv, rightDiv.querySelector(".send_message"));
         }
         chatDiv.scrollTop = chatDiv.scrollHeight;
     });
 }
-export {};
-// fetch(`http://${ipv4}:8000/api/chat/test/`, {
-// 	method: "POST",
-// 	headers: {
-// 		"Content-Type": "application/json",
-// 	},
-// 	body: JSON.stringify({
-// 		user_name: "test_user",
-// 		password: "test_password",
-// 	}),
-// 	credentials: "include", // Include cookies in the request
-// })
-// 	.then((response) => response.json())
-// 	.then((data) => console.log(data));
